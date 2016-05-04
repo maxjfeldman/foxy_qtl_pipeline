@@ -42,14 +42,16 @@ if re.match('y', comparison):
     nphe_d = phe_d.pop(0)
     print str(phe_d) + "\n"
 
-final_result = np.empty((0,20), str)
+final_result = np.empty((0,13), str)
 
 if re.match('y', comparison):
   for p in phe_r:
-    #print p
+    print p
     (treat, trait) = re.split('\.', str(p))
-    name_of_summary_table = "summary.table.mqm." + treat + "." + trait + ".csv" 
-    path_to_summary_table =  trait + "/" + treat + "/" + "mqm.out" + "/" + name_of_summary_table
+    name_of_summary_table = "summary.table.known_qtl." + treat + "." + trait + ".csv"
+    print(name_of_summary_table)
+    path_to_summary_table =  trait + "/" + treat + "/" + "known_markers.out" + "/" + name_of_summary_table
+    print(path_to_summary_table)
     if os.path.exists(path_to_summary_table):
         print "Yes"
         print path_to_summary_table
@@ -109,8 +111,8 @@ if re.match('y', comparison):
   for p in phe_d:
     print(p)
     (trait, treat1, treat2) = re.split('\.', str(p))
-    name_of_summary_table = "summary.table.mqm." + p + ".csv" 
-    path_to_summary_table =  directory + "/" + trait + "/comparison/mqm.out/" + name_of_summary_table
+    name_of_summary_table = "summary.table.known_qtl." + p + ".csv"
+    path_to_summary_table = directory + "/" + base_dir + "/" + trait + "/comparison/known_qtl.out/" + name_of_summary_table
     
     # Get comparison traits
     pwd = os.getcwd()
@@ -176,8 +178,8 @@ if re.match('y', comparison):
 if re.match('n', comparison):
     for p in phe_r:
       print(p)
-    name_of_summary_table = "summary.table.mqm." + p + ".csv" 
-    path_to_summary_table =  trait + "/" + "comparison" + "/" + "mqm.out" + "/" + name_of_summary_table
+    name_of_summary_table = "summary.table.known_qtl." + p + ".csv"
+    path_to_summary_table =  trait + "/" + "comparison" + "/" + "known_qtl.out" + "/" + name_of_summary_table
     print(name_of_summary_table)
     if os.path.exists(path_to_summary_table):
         print "Yes"
@@ -238,21 +240,21 @@ if re.match('n', comparison):
 concatenated_summary_table= base_dir + "_" + "concatenated_summary_table.csv"
 np.savetxt(concatenated_summary_table, final_result, delimiter=",", fmt="%s")
 
-os.chdir(directory)
-badass_banner_command = "Rscript mk.badass.banner.R " + base_dir + " " + comparison
-subprocess.call(badass_banner_command, shell=True)
+#os.chdir(directory)
+#badass_banner_command = "Rscript mk.badass.banner.R " + base_dir + " " + comparison
+#subprocess.call(badass_banner_command, shell=True)
 
-
-if re.match('y', timeseries):
-    if re.match('y', comparison):
-        print("Working on the timeseries qtl")
-        print("In base directory:")
-        print(base_dir)
-        print("Treatments are:")
-        print(treat1)
-        print(treat2)
-        time_series_qtl_command = "Rscript time_series_qtl_comp.R " + base_dir + " " + treat1 + " " + treat2
-        subprocess.call(time_series_qtl_command, shell=True)
-    if re.match('n', comparison):
-        print("Timeseries QTL analysis in a single treatment is not yet supported.")
+#
+#if re.match('y', timeseries):
+#    if re.match('y', comparison):
+#        print("Working on the timeseries qtl")
+#        print("In base directory:")
+#        print(base_dir)
+#        print("Treatments are:")
+#        print(treat1)
+#        print(treat2)
+#        time_series_qtl_command = "Rscript time_series_qtl_comp.R " + base_dir + " " + treat1 + " " + treat2
+#        subprocess.call(time_series_qtl_command, shell=True)
+#    if re.match('n', comparison):
+#        print("Timeseries QTL analysis in a single treatment is not yet supported.")
 

@@ -141,7 +141,7 @@ par(mfrow=c(1,1))
 # First SLOD
 out.mqm.F<-stepwiseqtlF(fg.cr.obj, pheno.cols = get(paste(t1, 'cols', sep=".")), max.qtl=9, usec= "slod", method="hk", penalties=c(max.perm.F[1],0,0))
 
-if(out.mqm.F$n.qtl > 0 ) {
+if(out.mqm.F$n.qtl > 1 ) {
 
 chr<-out.mqm.F$chr
 pos<-out.mqm.F$pos
@@ -466,7 +466,7 @@ save.image(file=paste('timeseries_', t1, '_cross.object.raw.Rdata', sep=""))
 # Now MLOD
 out.mqm.F<-stepwiseqtlF(fg.cr.obj, pheno.cols = get(paste(t1, 'cols', sep=".")), max.qtl=9, usec= "mlod", method="hk", penalties=c(max.perm.F[2],0,0))
 
-if(out.mqm.F$n.qtl > 0) {
+if(out.mqm.F$n.qtl > 1) {
  
 chr<-out.mqm.F$chr
 pos<-out.mqm.F$pos
@@ -551,7 +551,7 @@ for(p in 1:length(pname_list)) {
 #}
 
 
-dev.off()
+#dev.off()
 par(mfrow=c(1,1))
 
 #assign(paste('mlodeff', t1, 'mlod', sep="_"), mlodeff)
@@ -978,7 +978,7 @@ par(mfrow=c(1,1))
 # First SLOD
 out.mqm.F<-stepwiseqtlF(fg.cr.obj, pheno.cols = get(paste(t2, 'cols', sep=".")), max.qtl=9, usec= "slod", method="hk", penalties=c(max.perm.F[1],0,0))
 
-if(out.mqm.F$n.qtl > 0) {
+if(out.mqm.F$n.qtl > 1) {
 chr<-out.mqm.F$chr
 pos<-out.mqm.F$pos
 
