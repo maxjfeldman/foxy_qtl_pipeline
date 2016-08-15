@@ -118,7 +118,7 @@ eff <- geteffects(fg.cr.obj, pheno.cols=get(paste(t1, 'cols', sep=".")))
 setwd(dir.job.t1)
 
 pdf(paste('so_timeseries_qtl_',job, ".", t1, '.pdf', sep=""))
-plotlod(out, eff, get(paste(t1, 'cols', sep=".")), gap=15, ylab="Time")
+plotlod(out, eff, as.numeric(days), gap=15, ylab="Time")
 dev.off()
 
 out.F <- scanoneF(fg.cr.obj, pheno.cols = get(paste(t1, 'cols', sep=".")), method="hk")
@@ -148,51 +148,51 @@ pos<-out.mqm.F$pos
 
 # This is on the chopping block
 
-#if (length(chr) == 1) {
-#  temp<-summary(out.F)
-#  temp<-temp[temp$chr != chr,]
-#  temp<-temp[order(temp$slod, decreasing=T),]
-#  chr<-c(chr, temp[1,'chr'])
-#  pos<-c(pos, temp[1,'pos'])
-#}
+if (length(chr) == 1) {
+  temp<-summary(out.F)
+  temp<-temp[temp$chr != chr,]
+  temp<-temp[order(temp$slod, decreasing=T),]
+  chr<-c(chr, temp[1,'chr'])
+  pos<-c(pos, temp[1,'pos'])
+}
 
-#if (length(chr) == 0) {
-#  temp<-summary(out.F)
-#  temp<-temp[order(temp$slod, decreasing=T),]
-#  chr<-temp[1:2, 'chr']
-#  pos<-temp[1:2, 'pos']
-#}
+if (length(chr) == 0) {
+  temp<-summary(out.F)
+  temp<-temp[order(temp$slod, decreasing=T),]
+  chr<-temp[1:2, 'chr']
+  pos<-temp[1:2, 'pos']
+}
 
 qtl<-makeqtl(fg.cr.obj, chr, pos, what=c("prob"))
 Qs<-paste('Q', 1:length(pos), sep="")
 my.formula<-as.formula(paste("y~", paste(Qs, collapse="+")))
-#lodmat.F<-getprofile(fg.cr.obj, qtl =  qtl, pheno.cols = get(paste(t1, 'cols', sep=".")), formula = my.formula, method = "hk", verbose = F, tpy="comb")
+lodmat.F<-getprofile(fg.cr.obj, qtl =  qtl, pheno.cols = get(paste(t1, 'cols', sep=".")), formula = my.formula, method = "hk", verbose = F, tpy="comb")
 
 assign(paste('out.mqm.F', t1, 'slod', sep="_"), out.mqm.F)
 assign(paste('chr', t1, 'slod', sep="_"), chr)
 assign(paste('pos', t1, 'slod', sep="_"), pos)
 assign(paste('qtl', t1, 'slod', sep="_"), qtl)
 assign(paste('my.formula', t1, 'slod', sep="_"), my.formula)
-#assign(paste('lodmat.F', t1, 'slod', sep="_"), lodmat.F)
+assign(paste('lodmat.F', t1, 'slod', sep="_"), lodmat.F)
 
 # Make plots of the QTL LOD profile and the LOD profile over time
-#par(mfrow=c(2,1))
-#pdf(paste('mqm_timeseries_qtl_', job, ".", t1, '_slod.pdf', sep=""))
-#plotprofile(lodmat.F, mval = 8, col=heat.colors(100)[100:1], main="SLOD")
+par(mfrow=c(2,1))
+pdf(paste('mqm_timeseries_qtl_', job, ".", t1, '_slod.pdf', sep=""))
+plotprofile(lodmat.F, mval = 8, times=as.numeric(days), col=heat.colors(100)[100:1], main="SLOD")
 refqtlslod <- refineqtlF(fg.cr.obj, pheno.cols = get(paste(t1, 'cols', sep=".")), usec = "slod", qtl= qtl, method = "hk", keeplodprofile = T)
-#plotLodProfile(refqtlslod)
-#dev.off()
+plotLodProfile(refqtlslod)
+dev.off()
 par(mfrow=c(1,1))
 
 assign(paste('refqtlslod', t1, 'slod', sep="_"), refqtlslod)
 
-#slodeff <- vector("list", length(get(paste(t1, 'cols', sep="."))))
+slodeff <- vector("list", length(get(paste(t1, 'cols', sep="."))))
 
-#for(i in 1:length(slodeff)) {
-#  slodeff[[i]] <- summary(fitqtl(fg.cr.obj, phe=i+(min(get(paste(t1, 'cols', sep=".")))-1), qtl=qtl,
-#                                 method="hk", get.ests=TRUE,
-#                                 dropone=FALSE))$ests[,1]*c(1,2,2)
-#}
+for(i in 1:length(slodeff)) {
+  slodeff[[i]] <- summary(fitqtl(fg.cr.obj, phe=i+(min(get(paste(t1, 'cols', sep=".")))-1), qtl=qtl,
+                                 method="hk", get.ests=TRUE,
+                                 dropone=FALSE))$ests[,1]*c(1,2,2)
+}
 
 pname_list<-strsplit(phenames(fg.cr.obj)[get(paste(t1, 'cols', sep="."))], '_')
 
@@ -201,34 +201,34 @@ for(p in 1:length(pname_list)) {
   days<-c(days,pname_list[[p]][length(pname_list[[1]])-1])
 }
 
-#nam <- names(slodeff[[1]])
-#slodeff <- matrix(unlist(slodeff), byrow=TRUE, ncol=length(nam))
-#colnames(slodeff) <- nam
+nam <- names(slodeff[[1]])
+slodeff <- matrix(unlist(slodeff), byrow=TRUE, ncol=length(nam))
+colnames(slodeff) <- nam
 
-#n.col<-ncol(slodeff)
+n.col<-ncol(slodeff)
 
 # Lets plot the effect size over time
-#par(mfrow=c(1,n.col))
-#pdf(paste('mqm_timeseries_fx_size_slod_', job, ".", t1, ".pdf", sep=""))
+par(mfrow=c(1,n.col))
+pdf(paste('mqm_timeseries_fx_size_slod_', job, ".", t1, ".pdf", sep=""))
 # Draw a plot of the intercept
-#plot(days, slodeff[,1], lwd=2, type="l",
-#     xlab="Days after planting",
-#     ylab="Height (cm)", col="red")
-#mtext("baseline curve", side=3, line=0.5)
+plot(days, slodeff[,1], lwd=2, type="l",
+     xlab="Days after planting",
+     ylab="Height (cm)", col="red")
+mtext("baseline curve", side=3, line=0.5)
 # Now add plot of effect size for each QTL
-#for (i in 2:n.col) {
-#  plot(days, slodeff[,i], lwd=2, type="l",
-#       xlab="Days after planting",
-#       ylab="QTL effect (cm)", col="red")
-#  mtext(colnames(slodeff)[i], side=3, line=0.5)
-#}
+for (i in 2:n.col) {
+  plot(days, slodeff[,i], lwd=2, type="l",
+       xlab="Days after planting",
+       ylab="QTL effect (cm)", col="red")
+  mtext(colnames(slodeff)[i], side=3, line=0.5)
+}
 
-#dev.off()
-#par(mfrow=c(1,1))
+dev.off()
+par(mfrow=c(1,1))
 
-#assign(paste('slodeff', t1, 'slod', sep="_"), slodeff)
+assign(paste('slodeff', t1, 'slod', sep="_"), slodeff)
 
-#write.csv(slodeff, file=paste('slodeff_', t1, "_", job, '.csv', sep=""), quote=F, row.names=F)
+write.csv(slodeff, file=paste('slodeff_', t1, "_", job, '.csv', sep=""), quote=F, row.names=F)
 
 # get marker names
 m.names<-find.marker(fg.cr.obj, chr, pos)
@@ -315,50 +315,50 @@ if(out.mqm.F$n.qtl == 1){
   chr<-out.mqm.F$chr
   pos<-out.mqm.F$pos
   
-  #if (length(chr) == 1) {
-  #  temp<-summary(out.F)
-  #  temp<-temp[temp$chr != chr,]
-  #  temp<-temp[order(temp$slod, decreasing=T),]
-  #  chr<-c(chr, temp[1,'chr'])
-  #  pos<-c(pos, temp[1,'pos'])
-  #}
+  if (length(chr) == 1) {
+    temp<-summary(out.F)
+    temp<-temp[temp$chr != chr,]
+    temp<-temp[order(temp$slod, decreasing=T),]
+    chr<-c(chr, temp[1,'chr'])
+    pos<-c(pos, temp[1,'pos'])
+  }
   
-  #if (length(chr) == 0) {
-  #  temp<-summary(out.F)
-  #  temp<-temp[order(temp$slod, decreasing=T),]
-  #  chr<-temp[1:2, 'chr']
-  #  pos<-temp[1:2, 'pos']
-  #}
+  if (length(chr) == 0) {
+    temp<-summary(out.F)
+    temp<-temp[order(temp$slod, decreasing=T),]
+    chr<-temp[1:2, 'chr']
+    pos<-temp[1:2, 'pos']
+  }
   
   qtl<-makeqtl(fg.cr.obj, chr, pos, what=c("prob"))
   Qs<-paste('Q', 1:length(pos), sep="")
   my.formula<-as.formula(paste("y~", paste(Qs, collapse="+")))
-  #lodmat.F<-getprofile(fg.cr.obj, qtl =  qtl, pheno.cols = get(paste(t1, 'cols', sep=".")), formula = my.formula, method = "hk", verbose = F, tpy="comb")
+  lodmat.F<-getprofile(fg.cr.obj, qtl =  qtl, pheno.cols = get(paste(t1, 'cols', sep=".")), formula = my.formula, method = "hk", verbose = F, tpy="comb")
   
   assign(paste('out.mqm.F', t1, 'slod', sep="_"), out.mqm.F)
   assign(paste('chr', t1, 'slod', sep="_"), chr)
   assign(paste('pos', t1, 'slod', sep="_"), pos)
   assign(paste('qtl', t1, 'slod', sep="_"), qtl)
   assign(paste('my.formula', t1, 'slod', sep="_"), my.formula)
-  #assign(paste('lodmat.F', t1, 'slod', sep="_"), lodmat.F)
+  assign(paste('lodmat.F', t1, 'slod', sep="_"), lodmat.F)
   
   # Make plots of the QTL LOD profile and the LOD profile over time
-  #par(mfrow=c(2,1))
-  #pdf(paste('mqm_timeseries_qtl_', job, ".", t1, '_slod.pdf', sep=""))
-  #plotprofile(lodmat.F, mval = 8, col=heat.colors(100)[100:1], main="slod")
+  par(mfrow=c(2,1))
+  pdf(paste('mqm_timeseries_qtl_', job, ".", t1, '_slod.pdf', sep=""))
+  plotprofile(lodmat.F, mval = 8, times=as.numeric(days), col=heat.colors(100)[100:1], main="slod")
   refqtlslod <- refineqtlF(fg.cr.obj, pheno.cols = get(paste(t1, 'cols', sep=".")), usec = "slod", qtl= qtl, method = "hk", keeplodprofile = T)
-  #plotLodProfile(refqtlslod)
-  #dev.off()
+  plotLodProfile(refqtlslod)
+  dev.off()
   par(mfrow=c(1,1))
   
   assign(paste('refqtlslod', t1, 'slod', sep="_"), refqtlslod)
-  #slodeff <- vector("list", length(get(paste(t1, 'cols', sep="."))))
+  slodeff <- vector("list", length(get(paste(t1, 'cols', sep="."))))
   
-  #for(i in 1:length(slodeff)) {
-  #  slodeff[[i]] <- summary(fitqtl(fg.cr.obj, phe=i+(min(get(paste(t1, 'cols', sep=".")))-1), qtl=qtl,
-  #                                 method="hk", get.ests=TRUE,
-  #                                 dropone=FALSE))$ests[,1]*c(1,2,2)
-  #}
+  for(i in 1:length(slodeff)) {
+    slodeff[[i]] <- summary(fitqtl(fg.cr.obj, phe=i+(min(get(paste(t1, 'cols', sep=".")))-1), qtl=qtl,
+                                   method="hk", get.ests=TRUE,
+                                   dropone=FALSE))$ests[,1]*c(1,2,2)
+  }
   
   pname_list<-strsplit(phenames(fg.cr.obj)[get(paste(t1, 'cols', sep="."))], '_')
   
@@ -367,33 +367,33 @@ if(out.mqm.F$n.qtl == 1){
     days<-c(days,pname_list[[p]][length(pname_list[[1]])-1])
   }
   
-  #nam <- names(slodeff[[1]])
-  #slodeff <- matrix(unlist(slodeff), byrow=TRUE, ncol=length(nam))
-  #colnames(slodeff) <- nam
+  nam <- names(slodeff[[1]])
+  slodeff <- matrix(unlist(slodeff), byrow=TRUE, ncol=length(nam))
+  colnames(slodeff) <- nam
   
-  #n.col<-ncol(slodeff)
+  n.col<-ncol(slodeff)
   
   # Lets plot the effect size over time
-  #par(mfrow=c(1,n.col))
-  #pdf(paste('mqm_timeseries_fx_size_slod_', job, ".", t1, ".pdf", sep=""))
+  par(mfrow=c(1,n.col))
+  pdf(paste('mqm_timeseries_fx_size_slod_', job, ".", t1, ".pdf", sep=""))
   # Draw a plot of the intercept
-  #plot(days, slodeff[,1], lwd=2, type="l",
-  #     xlab="Days after planting",
-  #     ylab="Height (cm)", col="red")
-  #mtext("baseline curve", side=3, line=0.5)
+  plot(days, slodeff[,1], lwd=2, type="l",
+       xlab="Days after planting",
+       ylab="Height (cm)", col="red")
+  mtext("baseline curve", side=3, line=0.5)
   # Now add plot of effect size for each QTL
-  #for (i in 2:n.col) {
-  #  plot(days, slodeff[,i], lwd=2, type="l",
-  #       xlab="Days after planting",
-  #       ylab="QTL effect (cm)", col="red")
-  #  mtext(colnames(slodeff)[i], side=3, line=0.5)
-  #}
+  for (i in 2:n.col) {
+    plot(days, slodeff[,i], lwd=2, type="l",
+         xlab="Days after planting",
+         ylab="QTL effect (cm)", col="red")
+    mtext(colnames(slodeff)[i], side=3, line=0.5)
+  }
   
-  #dev.off()
-  #par(mfrow=c(1,1))
+  dev.off()
+  par(mfrow=c(1,1))
   
-  #assign(paste('slodeff', t1, 'slod', sep="_"), slodeff)
-  #write.csv(slodeff, file=paste('slodeff_', t1, "_", job, '.csv', sep=""), quote=F, row.names=F)
+  assign(paste('slodeff', t1, 'slod', sep="_"), slodeff)
+  write.csv(slodeff, file=paste('slodeff_', t1, "_", job, '.csv', sep=""), quote=F, row.names=F)
   # get marker names
   m.names<-find.marker(fg.cr.obj, chr, pos)
   
@@ -471,55 +471,55 @@ if(out.mqm.F$n.qtl > 1) {
 chr<-out.mqm.F$chr
 pos<-out.mqm.F$pos
 
-#if (length(chr) == 1) {
-#  temp<-summary(out.F)
-#  temp<-temp[temp$chr != chr,]
-#  temp<-temp[order(temp$mlod, decreasing=T),]
-#  chr<-c(chr, temp[1,'chr'])
-#  pos<-c(pos, temp[1,'pos'])
-#}
+if (length(chr) == 1) {
+  temp<-summary(out.F)
+  temp<-temp[temp$chr != chr,]
+  temp<-temp[order(temp$mlod, decreasing=T),]
+  chr<-c(chr, temp[1,'chr'])
+  pos<-c(pos, temp[1,'pos'])
+}
 
-#if (length(chr) == 0) {
-#  temp<-summary(out.F)
-#  temp<-temp[order(temp$mlod, decreasing=T),]
-#  chr<-temp[1:2, 'chr']
-#  pos<-temp[1:2, 'pos']
-#}
+if (length(chr) == 0) {
+  temp<-summary(out.F)
+  temp<-temp[order(temp$mlod, decreasing=T),]
+  chr<-temp[1:2, 'chr']
+  pos<-temp[1:2, 'pos']
+}
 
 qtl<-makeqtl(fg.cr.obj, chr, pos, what=c("prob"))
 Qs<-paste('Q', 1:length(pos), sep="")
 my.formula<-as.formula(paste("y~", paste(Qs, collapse="+")))
-#lodmat.F<-getprofile(fg.cr.obj, qtl =  qtl, pheno.cols = get(paste(t1, 'cols', sep=".")), formula = my.formula, method = "hk", verbose = F, tpy="comb")
+lodmat.F<-getprofile(fg.cr.obj, qtl =  qtl, pheno.cols = get(paste(t1, 'cols', sep=".")), formula = my.formula, method = "hk", verbose = F, tpy="comb")
 
 assign(paste('out.mqm.F', t1, 'mlod', sep="_"), out.mqm.F)
 assign(paste('chr', t1, 'mlod', sep="_"), chr)
 assign(paste('pos', t1, 'mlod', sep="_"), pos)
 assign(paste('qtl', t1, 'mlod', sep="_"), qtl)
 assign(paste('my.formula', t1, 'mlod', sep="_"), my.formula)
-#assign(paste('lodmat.F', t1, 'mlod', sep="_"), lodmat.F)
+assign(paste('lodmat.F', t1, 'mlod', sep="_"), lodmat.F)
 
 
 # Make plots of the QTL LOD profile and the LOD profile over time
-#par(mfrow=c(2,1))
-#pdf(paste('mqm_timeseries_qtl_', job, ".", t1, '_mlod.pdf', sep=""))
-#plotprofile(lodmat.F, mval = 8, col=heat.colors(100)[100:1], main="MLOD")
+par(mfrow=c(2,1))
+pdf(paste('mqm_timeseries_qtl_', job, ".", t1, '_mlod.pdf', sep=""))
+plotprofile(lodmat.F, mval = 8, times=as.numeric(days), col=heat.colors(100)[100:1], main="MLOD")
 refqtlmlod <- refineqtlF(fg.cr.obj, pheno.cols = get(paste(t1, 'cols', sep=".")), usec = "mlod", qtl= qtl, method = "hk", keeplodprofile = T)
-#plotLodProfile(refqtlmlod)
-#dev.off()
+plotLodProfile(refqtlmlod)
+dev.off()
 par(mfrow=c(1,1))
 
 assign(paste('refqtlmlod', t1, 'mlod', sep="_"), refqtlmlod)
 
 
-#mlodeff <- vector("list", length(get(paste(t1, 'cols', sep="."))))
+mlodeff <- vector("list", length(get(paste(t1, 'cols', sep="."))))
 
 ### Problem crops up here
 
-#for(i in 1:length(mlodeff)) {
-#  mlodeff[[i]] <- summary(fitqtl(fg.cr.obj, phe=i+(min(get(paste(t1, 'cols', sep=".")))-1), qtl=qtl,
-#                                 method="hk", get.ests=TRUE,
-#                                 dropone=FALSE))$ests[,1]*c(1,2,2)
-#}
+for(i in 1:length(mlodeff)) {
+  mlodeff[[i]] <- summary(fitqtl(fg.cr.obj, phe=i+(min(get(paste(t1, 'cols', sep=".")))-1), qtl=qtl,
+                                 method="hk", get.ests=TRUE,
+                                 dropone=FALSE))$ests[,1]*c(1,2,2)
+}
 
 pname_list<-strsplit(phenames(fg.cr.obj)[get(paste(t1, 'cols', sep="."))], '_')
 
@@ -528,35 +528,35 @@ for(p in 1:length(pname_list)) {
   days<-c(days,pname_list[[p]][length(pname_list[[1]])-1])
 }
 
-#nam <- names(mlodeff[[1]])
-#mlodeff <- matrix(unlist(mlodeff), byrow=TRUE, ncol=length(nam))
-#colnames(mlodeff) <- nam
+nam <- names(mlodeff[[1]])
+mlodeff <- matrix(unlist(mlodeff), byrow=TRUE, ncol=length(nam))
+colnames(mlodeff) <- nam
 
-#n.col<-ncol(mlodeff)
+n.col<-ncol(mlodeff)
 
 # Lets plot the effect size over time
-#par(mfrow=c(1,n.col))
-#pdf(paste('mqm_timeseries_fx_size_mlod_',job, ".", t1, '.pdf', sep=""))
+par(mfrow=c(1,n.col))
+pdf(paste('mqm_timeseries_fx_size_mlod_',job, ".", t1, '.pdf', sep=""))
 # Draw a plot of the intercept
-#plot(days, mlodeff[,1], lwd=2, type="l",
-#     xlab="Days after planting",
-#     ylab="Height (cm)", col="red")
-#mtext("baseline curve", side=3, line=0.5)
+plot(days, mlodeff[,1], lwd=2, type="l",
+     xlab="Days after planting",
+     ylab="Height (cm)", col="red")
+mtext("baseline curve", side=3, line=0.5)
 # Now add plot of effect size for each QTL
-#for (i in 2:n.col) {
-#  plot(days, mlodeff[,i], lwd=2, type="l",
-#       xlab="Days after planting",
-#       ylab="QTL effect (cm)", col="red")
-#  mtext(colnames(mlodeff)[i], side=3, line=0.5)
-#}
+for (i in 2:n.col) {
+  plot(days, mlodeff[,i], lwd=2, type="l",
+       xlab="Days after planting",
+       ylab="QTL effect (cm)", col="red")
+  mtext(colnames(mlodeff)[i], side=3, line=0.5)
+}
 
 
-#dev.off()
+dev.off()
 par(mfrow=c(1,1))
 
-#assign(paste('mlodeff', t1, 'mlod', sep="_"), mlodeff)
+assign(paste('mlodeff', t1, 'mlod', sep="_"), mlodeff)
 
-#write.csv(mlodeff, file=paste('mlodeff_', t1, "_", job, '.csv', sep=""), quote=F, row.names=F)
+write.csv(mlodeff, file=paste('mlodeff_', t1, "_", job, '.csv', sep=""), quote=F, row.names=F)
 
 # get marker names
 m.names<-find.marker(fg.cr.obj, chr, pos)
@@ -641,50 +641,50 @@ if(out.mqm.F$n.qtl == 1){
   chr<-out.mqm.F$chr
   pos<-out.mqm.F$pos
   
-  #if (length(chr) == 1) {
-  #  temp<-summary(out.F)
-  #  temp<-temp[temp$chr != chr,]
-  #  temp<-temp[order(temp$mlod, decreasing=T),]
-  #  chr<-c(chr, temp[1,'chr'])
-  #  pos<-c(pos, temp[1,'pos'])
-  #}
+  if (length(chr) == 1) {
+    temp<-summary(out.F)
+    temp<-temp[temp$chr != chr,]
+    temp<-temp[order(temp$mlod, decreasing=T),]
+    chr<-c(chr, temp[1,'chr'])
+    pos<-c(pos, temp[1,'pos'])
+  }
   
-  #if (length(chr) == 0) {
-  #  temp<-summary(out.F)
-  #  temp<-temp[order(temp$mlod, decreasing=T),]
-  #  chr<-temp[1:2, 'chr']
-  #  pos<-temp[1:2, 'pos']
-  #}
+  if (length(chr) == 0) {
+    temp<-summary(out.F)
+    temp<-temp[order(temp$mlod, decreasing=T),]
+    chr<-temp[1:2, 'chr']
+    pos<-temp[1:2, 'pos']
+  }
   
   qtl<-makeqtl(fg.cr.obj, chr, pos, what=c("prob"))
   Qs<-paste('Q', 1:length(pos), sep="")
   my.formula<-as.formula(paste("y~", paste(Qs, collapse="+")))
-  #lodmat.F<-getprofile(fg.cr.obj, qtl =  qtl, pheno.cols = get(paste(t1, 'cols', sep=".")), formula = my.formula, method = "hk", verbose = F, tpy="comb")
+  lodmat.F<-getprofile(fg.cr.obj, qtl =  qtl, pheno.cols = get(paste(t1, 'cols', sep=".")), formula = my.formula, method = "hk", verbose = F, tpy="comb")
   
   assign(paste('out.mqm.F', t1, 'mlod', sep="_"), out.mqm.F)
   assign(paste('chr', t1, 'mlod', sep="_"), chr)
   assign(paste('pos', t1, 'mlod', sep="_"), pos)
   assign(paste('qtl', t1, 'mlod', sep="_"), qtl)
   assign(paste('my.formula', t1, 'mlod', sep="_"), my.formula)
-  #assign(paste('lodmat.F', t1, 'mlod', sep="_"), lodmat.F)
+  assign(paste('lodmat.F', t1, 'mlod', sep="_"), lodmat.F)
   
   # Make plots of the QTL LOD profile and the LOD profile over time
-  #par(mfrow=c(2,1))
-  #pdf(paste('mqm_timeseries_qtl_', job, ".", t1, '_mlod.pdf', sep=""))
-  #plotprofile(lodmat.F, mval = 8, col=heat.colors(100)[100:1], main="MLOD")
+  par(mfrow=c(2,1))
+  pdf(paste('mqm_timeseries_qtl_', job, ".", t1, '_mlod.pdf', sep=""))
+  plotprofile(lodmat.F, mval = 8, times=as.numeric(days), col=heat.colors(100)[100:1], main="MLOD")
   refqtlmlod <- refineqtlF(fg.cr.obj, pheno.cols = get(paste(t1, 'cols', sep=".")), usec = "mlod", qtl= qtl, method = "hk", keeplodprofile = T)
-  #plotLodProfile(refqtlmlod)
-  #dev.off()
+  plotLodProfile(refqtlmlod)
+  dev.off()
   par(mfrow=c(1,1))
   
   assign(paste('refqtlmlod', t1, 'mlod', sep="_"), refqtlmlod)
-  #mlodeff <- vector("list", length(get(paste(t1, 'cols', sep="."))))
+  mlodeff <- vector("list", length(get(paste(t1, 'cols', sep="."))))
   
-  #for(i in 1:length(mlodeff)) {
-  #  mlodeff[[i]] <- summary(fitqtl(fg.cr.obj, phe=i+(min(get(paste(t1, 'cols', sep=".")))-1), qtl=qtl,
-  #                                 method="hk", get.ests=TRUE,
-  #                                 dropone=FALSE))$ests[,1]*c(1,2,2)
-  #}
+  for(i in 1:length(mlodeff)) {
+    mlodeff[[i]] <- summary(fitqtl(fg.cr.obj, phe=i+(min(get(paste(t1, 'cols', sep=".")))-1), qtl=qtl,
+                                   method="hk", get.ests=TRUE,
+                                   dropone=FALSE))$ests[,1]*c(1,2,2)
+  }
   
   pname_list<-strsplit(phenames(fg.cr.obj)[get(paste(t1, 'cols', sep="."))], '_')
   
@@ -693,33 +693,33 @@ if(out.mqm.F$n.qtl == 1){
     days<-c(days,pname_list[[p]][length(pname_list[[1]])-1])
   }
   
-  #nam <- names(mlodeff[[1]])
-  #mlodeff <- matrix(unlist(mlodeff), byrow=TRUE, ncol=length(nam))
-  #colnames(mlodeff) <- nam
+  nam <- names(mlodeff[[1]])
+  mlodeff <- matrix(unlist(mlodeff), byrow=TRUE, ncol=length(nam))
+  colnames(mlodeff) <- nam
   
-  #n.col<-ncol(mlodeff)
+  n.col<-ncol(mlodeff)
   
   # Lets plot the effect size over time
-  #par(mfrow=c(1,n.col))
-  #pdf(paste('mqm_timeseries_fx_size_mlod_', job, ".", t1, ".pdf", sep=""))
+  par(mfrow=c(1,n.col))
+  pdf(paste('mqm_timeseries_fx_size_mlod_', job, ".", t1, ".pdf", sep=""))
   # Draw a plot of the intercept
-  #plot(days, mlodeff[,1], lwd=2, type="l",
-  #     xlab="Days after planting",
-  #     ylab="Height (cm)", col="red")
-  #mtext("baseline curve", side=3, line=0.5)
+  plot(days, mlodeff[,1], lwd=2, type="l",
+       xlab="Days after planting",
+       ylab="Height (cm)", col="red")
+  mtext("baseline curve", side=3, line=0.5)
   # Now add plot of effect size for each QTL
-  #for (i in 2:n.col) {
-  #  plot(days, mlodeff[,i], lwd=2, type="l",
-  #       xlab="Days after planting",
-  #       ylab="QTL effect (cm)", col="red")
-  #  mtext(colnames(mlodeff)[i], side=3, line=0.5)
-  #}
+  for (i in 2:n.col) {
+    plot(days, mlodeff[,i], lwd=2, type="l",
+         xlab="Days after planting",
+         ylab="QTL effect (cm)", col="red")
+    mtext(colnames(mlodeff)[i], side=3, line=0.5)
+  }
   
-  #dev.off()
-  #par(mfrow=c(1,1))
+  dev.off()
+  par(mfrow=c(1,1))
   
-  #assign(paste('mlodeff', t1, 'mlod', sep="_"), mlodeff)
-  #write.csv(mlodeff, file=paste('mlodeff_', t1, "_", job, '.csv', sep=""), quote=F, row.names=F)
+  assign(paste('mlodeff', t1, 'mlod', sep="_"), mlodeff)
+  write.csv(mlodeff, file=paste('mlodeff_', t1, "_", job, '.csv', sep=""), quote=F, row.names=F)
   # get marker names
   m.names<-find.marker(fg.cr.obj, chr, pos)
   
@@ -795,33 +795,33 @@ pos<-unique_qtl_t1$pos
 qtl<-makeqtl(fg.cr.obj, unique_qtl_t1$chr, unique_qtl_t1$pos, what=c("prob"))
 Qs<-paste('Q', 1:length(unique_qtl_t1$pos), sep="")
 my.formula<-as.formula(paste("y~", paste(Qs, collapse="+")))
-#lodmat.F<-getprofile(fg.cr.obj, qtl =  qtl, pheno.cols = get(paste(t1, 'cols', sep=".")), formula = my.formula, method = "hk", verbose = F, tpy="comb")
+lodmat.F<-getprofile(fg.cr.obj, qtl =  qtl, pheno.cols = get(paste(t1, 'cols', sep=".")), formula = my.formula, method = "hk", verbose = F, tpy="comb")
 
 assign(paste('chr', t1, 'all_qtl', sep="_"), chr)
 assign(paste('pos', t1, 'all_qtl', sep="_"), pos)
 assign(paste('qtl', t1, 'all_qtl', sep="_"), qtl)
 assign(paste('my.formula', t1, 'all_qtl', sep="_"), my.formula)
-#assign(paste('lodmat.F', t1, 'all_qtl', sep="_"), lodmat.F)
+assign(paste('lodmat.F', t1, 'all_qtl', sep="_"), lodmat.F)
 
 
 # Make plots of the QTL LOD profile and the LOD profile over time
-#par(mfrow=c(1,1))
-#pdf(paste('mqm_timeseries_qtl_', job, ".", t1, '_all_qtl.pdf', sep=""))
-#plotprofile(lodmat.F, mval = 8, col=heat.colors(100)[100:1], main="All QTL")
-#refqtlslod <- refineqtlF(fg.cr.obj, pheno.cols = get(paste(t1, 'cols', sep=".")), usec = "slod", qtl= qtl, method = "hk", keeplodprofile = T)
-#plotLodProfile(refqtlslod)
-#dev.off()
+par(mfrow=c(1,1))
+pdf(paste('mqm_timeseries_qtl_', job, ".", t1, '_all_qtl.pdf', sep=""))
+plotprofile(lodmat.F, mval = 8, times=as.numeric(days), col=heat.colors(100)[100:1], main="All QTL")
+refqtlslod <- refineqtlF(fg.cr.obj, pheno.cols = get(paste(t1, 'cols', sep=".")), usec = "slod", qtl= qtl, method = "hk", keeplodprofile = T)
+plotLodProfile(refqtlslod)
+dev.off()
 par(mfrow=c(1,1))
 
-#assign(paste('refqtlslod', t1, 'all_qtl', sep="_"), refqtlslod)
+assign(paste('refqtlslod', t1, 'all_qtl', sep="_"), refqtlslod)
 
-#klodeff <- vector("list", length(get(paste(t1, 'cols', sep="."))))
+klodeff <- vector("list", length(get(paste(t1, 'cols', sep="."))))
 
-#for(i in 1:length(klodeff)) {
-#  klodeff[[i]] <- summary(fitqtl(fg.cr.obj, phe=i+(min(get(paste(t1, 'cols', sep=".")))-1), qtl=qtl,
-#                                 method="hk", get.ests=TRUE,
-#                                 dropone=FALSE))$ests[,1]*c(1,2,2)
-#}
+for(i in 1:length(klodeff)) {
+  klodeff[[i]] <- summary(fitqtl(fg.cr.obj, phe=i+(min(get(paste(t1, 'cols', sep=".")))-1), qtl=qtl,
+                                 method="hk", get.ests=TRUE,
+                                 dropone=FALSE))$ests[,1]*c(1,2,2)
+}
 
 pname_list<-strsplit(phenames(fg.cr.obj)[get(paste(t1, 'cols', sep="."))], '_')
 
@@ -830,35 +830,35 @@ for(p in 1:length(pname_list)) {
   days<-c(days,pname_list[[p]][length(pname_list[[1]])-1])
 }
 
-#nam <- names(klodeff[[1]])
-#klodeff <- matrix(unlist(klodeff), byrow=TRUE, ncol=length(nam))
-#colnames(klodeff) <- nam
+nam <- names(klodeff[[1]])
+klodeff <- matrix(unlist(klodeff), byrow=TRUE, ncol=length(nam))
+colnames(klodeff) <- nam
 
-#n.col<-ncol(klodeff)
+n.col<-ncol(klodeff)
 
 # Lets plot the effect size over time
-#par(mfrow=c(1,n.col))
-#pdf(paste('mqm_timeseries_fx_size_all_qtl_', job, ".", t1, ".pdf", sep=""))
+par(mfrow=c(1,n.col))
+pdf(paste('mqm_timeseries_fx_size_all_qtl_', job, ".", t1, ".pdf", sep=""))
 # Draw a plot of the intercept
-#plot(days, klodeff[,1], lwd=2, type="l",
-#     xlab="Days after planting",
-#     ylab="Height (cm)", col="red")
-#mtext("baseline curve", side=3, line=0.5)
+plot(days, klodeff[,1], lwd=2, type="l",
+     xlab="Days after planting",
+     ylab="Height (cm)", col="red")
+mtext("baseline curve", side=3, line=0.5)
 # Now add plot of effect size for each QTL
-#for (i in 2:n.col) {
-#  plot(days, klodeff[,i], lwd=2, type="l",
-#       xlab="Days after planting",
-#       ylab="QTL effect (cm)", col="red")
-#  mtext(colnames(klodeff)[i], side=3, line=0.5)
-#}
+for (i in 2:n.col) {
+  plot(days, klodeff[,i], lwd=2, type="l",
+       xlab="Days after planting",
+       ylab="QTL effect (cm)", col="red")
+  mtext(colnames(klodeff)[i], side=3, line=0.5)
+}
 
 
-#dev.off()
-#par(mfrow=c(1,1))
+dev.off()
+par(mfrow=c(1,1))
 
-#assign(paste('klodeff', t1, 'all_qtl', sep="_"), klodeff)
+assign(paste('klodeff', t1, 'all_qtl', sep="_"), klodeff)
 
-#write.csv(klodeff, file=paste('klodeff_', t1, "_", job, '.csv', sep=""), quote=F, row.names=F)
+write.csv(klodeff, file=paste('klodeff_', t1, "_", job, '.csv', sep=""), quote=F, row.names=F)
 # Fit a mulitple QTL model based upon the formula derived above and the fine tuned QTL location
 
 # get marker names
@@ -955,7 +955,7 @@ for(p in 1:length(pname_list)) {
 out<- scanone(fg.cr.obj, pheno.col = get(paste(t2, 'cols', sep=".")), method="hk")
 eff <- geteffects(fg.cr.obj, pheno.cols=get(paste(t2, 'cols', sep=".")))
 pdf(paste('so_timeseries_qtl_', job, ".", t2, '.pdf', sep=""))
-plotlod(out, eff, get(paste(t2, 'cols', sep=".")), gap=15, ylab="Time")
+plotlod(out, eff, as.numeric(days), gap=15, ylab="Time")
 dev.off()
 
 out.F <- scanoneF(fg.cr.obj, pheno.cols = get(paste(t2, 'cols', sep=".")), method="hk")
@@ -982,51 +982,51 @@ if(out.mqm.F$n.qtl > 1) {
 chr<-out.mqm.F$chr
 pos<-out.mqm.F$pos
 
-#if (length(chr) == 1) {
-#  temp<-summary(out.F)
-#  temp<-temp[temp$chr != chr,]
-#  temp<-temp[order(temp$slod, decreasing=T),]
-#  chr<-c(chr, temp[1,'chr'])
-#  pos<-c(pos, temp[1,'pos'])
-#}
+if (length(chr) == 1) {
+  temp<-summary(out.F)
+  temp<-temp[temp$chr != chr,]
+  temp<-temp[order(temp$slod, decreasing=T),]
+  chr<-c(chr, temp[1,'chr'])
+  pos<-c(pos, temp[1,'pos'])
+}
 
-#if (length(chr) == 0) {
-#  temp<-summary(out.F)
-#  temp<-temp[order(temp$slod, decreasing=T),]
-#  chr<-temp[1:2, 'chr']
-#  pos<-temp[1:2, 'pos']
-#}
+if (length(chr) == 0) {
+  temp<-summary(out.F)
+  temp<-temp[order(temp$slod, decreasing=T),]
+  chr<-temp[1:2, 'chr']
+  pos<-temp[1:2, 'pos']
+}
 
 qtl<-makeqtl(fg.cr.obj, chr, pos, what=c("prob"))
 Qs<-paste('Q', 1:length(pos), sep="")
 my.formula<-as.formula(paste("y~", paste(Qs, collapse="+")))
-#lodmat.F<-getprofile(fg.cr.obj, qtl = qtl, pheno.cols = get(paste(t2, 'cols', sep=".")), formula = my.formula, method = "hk", verbose = F, tpy="comb")
+lodmat.F<-getprofile(fg.cr.obj, qtl = qtl, pheno.cols = get(paste(t2, 'cols', sep=".")), formula = my.formula, method = "hk", verbose = F, tpy="comb")
 
 assign(paste('out.mqm.F', t2, 'slod', sep="_"), out.mqm.F)
 assign(paste('chr', t2, 'slod', sep="_"), chr)
 assign(paste('pos', t2, 'slod', sep="_"), pos)
 assign(paste('qtl', t2, 'slod', sep="_"), qtl)
 assign(paste('my.formula', t2, 'slod', sep="_"), my.formula)
-#assign(paste('lodmat.F', t2, 'slod', sep="_"), lodmat.F)
+assign(paste('lodmat.F', t2, 'slod', sep="_"), lodmat.F)
 
 # Make plots of the QTL LOD profile and the LOD profile over time
-#par(mfrow=c(2,1))
-#pdf(paste('mqm_timeseries_qtl_', job, ".", t2, '_slod.pdf', sep=""))
-#plotprofile(lodmat.F, mval = 8, col=heat.colors(100)[100:1], main="SLOD")
+par(mfrow=c(2,1))
+pdf(paste('mqm_timeseries_qtl_', job, ".", t2, '_slod.pdf', sep=""))
+plotprofile(lodmat.F, mval = 8, times=as.numeric(days), col=heat.colors(100)[100:1], main="SLOD")
 refqtlslod <- refineqtlF(fg.cr.obj, pheno.cols = get(paste(t2, 'cols', sep=".")), usec = "slod", qtl= qtl, method = "hk", keeplodprofile = T)
-#plotLodProfile(refqtlslod)
-#dev.off()
+plotLodProfile(refqtlslod)
+dev.off()
 par(mfrow=c(1,1))
 
 assign(paste('refqtlslod', t2, 'slod', sep="_"), refqtlslod)
 
-#slodeff <- vector("list", length(get(paste(t2, 'cols', sep="."))))
+slodeff <- vector("list", length(get(paste(t2, 'cols', sep="."))))
 
-#for(i in 1:length(slodeff)) {
-#  slodeff[[i]] <- summary(fitqtl(fg.cr.obj, phe=i+(min(get(paste(t2, 'cols', sep=".")))-1), qtl=qtl,
-#                                 method="hk", get.ests=TRUE,
-#                                 dropone=FALSE))$ests[,1]*c(1,2,2)
-#}
+for(i in 1:length(slodeff)) {
+  slodeff[[i]] <- summary(fitqtl(fg.cr.obj, phe=i+(min(get(paste(t2, 'cols', sep=".")))-1), qtl=qtl,
+                                 method="hk", get.ests=TRUE,
+                                 dropone=FALSE))$ests[,1]*c(1,2,2)
+}
 
 pname_list<-strsplit(phenames(fg.cr.obj)[get(paste(t2, 'cols', sep="."))], '_')
 
@@ -1035,34 +1035,34 @@ for(p in 1:length(pname_list)) {
   days<-c(days,pname_list[[p]][length(pname_list[[1]])-1])
 }
 
-#nam <- names(slodeff[[1]])
-#slodeff <- matrix(unlist(slodeff), byrow=TRUE, ncol=length(nam))
-#colnames(slodeff) <- nam
+nam <- names(slodeff[[1]])
+slodeff <- matrix(unlist(slodeff), byrow=TRUE, ncol=length(nam))
+colnames(slodeff) <- nam
 
-#n.col<-ncol(slodeff)
+n.col<-ncol(slodeff)
 
 # Lets plot the effect size over time
-#par(mfrow=c(1,n.col))
-#pdf(paste('mqm_timeseries_fx_size_slod_', job, ".", t2, ".pdf", sep=""))
+par(mfrow=c(1,n.col))
+pdf(paste('mqm_timeseries_fx_size_slod_', job, ".", t2, ".pdf", sep=""))
 # Draw a plot of the intercept
-#plot(days, slodeff[,1], lwd=2, type="l",
-#     xlab="Days after planting",
-#     ylab="Height (cm)", col="red")
-#mtext("baseline curve", side=3, line=0.5)
+plot(days, slodeff[,1], lwd=2, type="l",
+     xlab="Days after planting",
+     ylab="Height (cm)", col="red")
+mtext("baseline curve", side=3, line=0.5)
 # Now add plot of effect size for each QTL
-#for (i in 2:n.col) {
-#  plot(days, slodeff[,i], lwd=2, type="l",
-#       xlab="Days after planting",
-#       ylab="QTL effect (cm)", col="red")
-#  mtext(colnames(slodeff)[i], side=3, line=0.5)
-#}
+for (i in 2:n.col) {
+  plot(days, slodeff[,i], lwd=2, type="l",
+       xlab="Days after planting",
+       ylab="QTL effect (cm)", col="red")
+  mtext(colnames(slodeff)[i], side=3, line=0.5)
+}
 
 dev.off()
 par(mfrow=c(1,1))
 
-#assign(paste('slodeff', t2, 'slod', sep="_"), slodeff)
+assign(paste('slodeff', t2, 'slod', sep="_"), slodeff)
 
-#write.csv(slodeff, file=paste('slodeff_', t2, "_", job, '.csv', sep=""), quote=F, row.names=F)
+write.csv(slodeff, file=paste('slodeff_', t2, "_", job, '.csv', sep=""), quote=F, row.names=F)
 
 # get marker names
 m.names<-find.marker(fg.cr.obj, chr, pos)
@@ -1146,50 +1146,50 @@ if(out.mqm.F$n.qtl == 1){
   chr<-out.mqm.F$chr
   pos<-out.mqm.F$pos
   
-  #if (length(chr) == 1) {
-  #  temp<-summary(out.F)
-  #  temp<-temp[temp$chr != chr,]
-  #  temp<-temp[order(temp$slod, decreasing=T),]
-  #  chr<-c(chr, temp[1,'chr'])
-  #  pos<-c(pos, temp[1,'pos'])
-  #}
+  if (length(chr) == 1) {
+    temp<-summary(out.F)
+    temp<-temp[temp$chr != chr,]
+    temp<-temp[order(temp$slod, decreasing=T),]
+    chr<-c(chr, temp[1,'chr'])
+    pos<-c(pos, temp[1,'pos'])
+  }
   
-  #if (length(chr) == 0) {
-  #  temp<-summary(out.F)
-  #  temp<-temp[order(temp$slod, decreasing=T),]
-  #  chr<-temp[1:2, 'chr']
-  #  pos<-temp[1:2, 'pos']
-  #}
+  if (length(chr) == 0) {
+    temp<-summary(out.F)
+    temp<-temp[order(temp$slod, decreasing=T),]
+    chr<-temp[1:2, 'chr']
+    pos<-temp[1:2, 'pos']
+  }
   
   qtl<-makeqtl(fg.cr.obj, chr, pos, what=c("prob"))
   Qs<-paste('Q', 1:length(pos), sep="")
   my.formula<-as.formula(paste("y~", paste(Qs, collapse="+")))
-  #lodmat.F<-getprofile(fg.cr.obj, qtl =  qtl, pheno.cols = get(paste(t2, 'cols', sep=".")), formula = my.formula, method = "hk", verbose = F, tpy="comb")
+  lodmat.F<-getprofile(fg.cr.obj, qtl =  qtl, pheno.cols = get(paste(t2, 'cols', sep=".")), formula = my.formula, method = "hk", verbose = F, tpy="comb")
   
   assign(paste('out.mqm.F', t2, 'slod', sep="_"), out.mqm.F)
   assign(paste('chr', t2, 'slod', sep="_"), chr)
   assign(paste('pos', t2, 'slod', sep="_"), pos)
   assign(paste('qtl', t2, 'slod', sep="_"), qtl)
   assign(paste('my.formula', t2, 'slod', sep="_"), my.formula)
-  #assign(paste('lodmat.F', t2, 'slod', sep="_"), lodmat.F)
+  assign(paste('lodmat.F', t2, 'slod', sep="_"), lodmat.F)
   
   # Make plots of the QTL LOD profile and the LOD profile over time
-  #par(mfrow=c(2,1))
-  #pdf(paste('mqm_timeseries_qtl_', job, ".", t2, '_slod.pdf', sep=""))
-  #plotprofile(lodmat.F, mval = 8, col=heat.colors(100)[100:1], main="slod")
+  par(mfrow=c(2,1))
+  pdf(paste('mqm_timeseries_qtl_', job, ".", t2, '_slod.pdf', sep=""))
+  plotprofile(lodmat.F, mval = 8, times=as.numeric(days), col=heat.colors(100)[100:1], main="slod")
   refqtlslod <- refineqtlF(fg.cr.obj, pheno.cols = get(paste(t2, 'cols', sep=".")), usec = "slod", qtl= qtl, method = "hk", keeplodprofile = T)
-  #plotLodProfile(refqtlslod)
-  #dev.off()
+  plotLodProfile(refqtlslod)
+  dev.off()
   par(mfrow=c(1,1))
   
   assign(paste('refqtlslod', t2, 'slod', sep="_"), refqtlslod)
-  #slodeff <- vector("list", length(get(paste(t2, 'cols', sep="."))))
+  slodeff <- vector("list", length(get(paste(t2, 'cols', sep="."))))
   
-  #for(i in 1:length(slodeff)) {
-  #  slodeff[[i]] <- summary(fitqtl(fg.cr.obj, phe=i+(min(get(paste(t2, 'cols', sep=".")))-1), qtl=qtl,
-  #                                 method="hk", get.ests=TRUE,
-  #                                 dropone=FALSE))$ests[,1]*c(1,2,2)
-  #}
+  for(i in 1:length(slodeff)) {
+    slodeff[[i]] <- summary(fitqtl(fg.cr.obj, phe=i+(min(get(paste(t2, 'cols', sep=".")))-1), qtl=qtl,
+                                   method="hk", get.ests=TRUE,
+                                   dropone=FALSE))$ests[,1]*c(1,2,2)
+  }
   
   pname_list<-strsplit(phenames(fg.cr.obj)[get(paste(t2, 'cols', sep="."))], '_')
   
@@ -1198,33 +1198,33 @@ if(out.mqm.F$n.qtl == 1){
     days<-c(days,pname_list[[p]][length(pname_list[[1]])-1])
   }
   
-  #nam <- names(slodeff[[1]])
-  #slodeff <- matrix(unlist(slodeff), byrow=TRUE, ncol=length(nam))
-  #colnames(slodeff) <- nam
+  nam <- names(slodeff[[1]])
+  slodeff <- matrix(unlist(slodeff), byrow=TRUE, ncol=length(nam))
+  colnames(slodeff) <- nam
   
-  #n.col<-ncol(slodeff)
+  n.col<-ncol(slodeff)
   
   # Lets plot the effect size over time
-  #par(mfrow=c(1,n.col))
-  #pdf(paste('mqm_timeseries_fx_size_slod_', job, ".", t2, ".pdf", sep=""))
+  par(mfrow=c(1,n.col))
+  pdf(paste('mqm_timeseries_fx_size_slod_', job, ".", t2, ".pdf", sep=""))
   # Draw a plot of the intercept
-  #plot(days, slodeff[,1], lwd=2, type="l",
-  #     xlab="Days after planting",
-  #     ylab="Height (cm)", col="red")
-  #mtext("baseline curve", side=3, line=0.5)
+  plot(days, slodeff[,1], lwd=2, type="l",
+       xlab="Days after planting",
+       ylab="Height (cm)", col="red")
+  mtext("baseline curve", side=3, line=0.5)
   # Now add plot of effect size for each QTL
-  #for (i in 2:n.col) {
-  #  plot(days, slodeff[,i], lwd=2, type="l",
-  #       xlab="Days after planting",
-  #       ylab="QTL effect (cm)", col="red")
-  #  mtext(colnames(slodeff)[i], side=3, line=0.5)
-  #}
+  for (i in 2:n.col) {
+    plot(days, slodeff[,i], lwd=2, type="l",
+         xlab="Days after planting",
+         ylab="QTL effect (cm)", col="red")
+    mtext(colnames(slodeff)[i], side=3, line=0.5)
+  }
   
-  #dev.off()
-  #par(mfrow=c(1,1))
+  dev.off()
+  par(mfrow=c(1,1))
   
-  #assign(paste('slodeff', t2, 'slod', sep="_"), slodeff)
-  #write.csv(slodeff, file=paste('slodeff_', t2, "_", job, '.csv', sep=""), quote=F, row.names=F)
+  assign(paste('slodeff', t2, 'slod', sep="_"), slodeff)
+  write.csv(slodeff, file=paste('slodeff_', t2, "_", job, '.csv', sep=""), quote=F, row.names=F)
   # get marker names
   m.names<-find.marker(fg.cr.obj, chr, pos)
   
@@ -1301,50 +1301,50 @@ if(out.mqm.F$n.qtl > 1) {
 chr<-out.mqm.F$chr
 pos<-out.mqm.F$pos
 
-#if (length(chr) == 1) {
-#  temp<-summary(out.F)
-#  temp<-temp[temp$chr != chr,]
-#  temp<-temp[order(temp$mlod, decreasing=T),]
-#  chr<-c(chr, temp[1,'chr'])
-#  pos<-c(pos, temp[1,'pos'])
-#}
+if (length(chr) == 1) {
+  temp<-summary(out.F)
+  temp<-temp[temp$chr != chr,]
+  temp<-temp[order(temp$mlod, decreasing=T),]
+  chr<-c(chr, temp[1,'chr'])
+  pos<-c(pos, temp[1,'pos'])
+}
 
-#if (length(chr) == 0) {
-#  temp<-summary(out.F)
-#  temp<-temp[order(temp$mlod, decreasing=T),]
-#  chr<-temp[1:2, 'chr']
-#  pos<-temp[1:2, 'pos']
-#}
+if (length(chr) == 0) {
+  temp<-summary(out.F)
+  temp<-temp[order(temp$mlod, decreasing=T),]
+  chr<-temp[1:2, 'chr']
+  pos<-temp[1:2, 'pos']
+}
 
 qtl<-makeqtl(fg.cr.obj, chr, pos, what=c("prob"))
 Qs<-paste('Q', 1:length(pos), sep="")
 my.formula<-as.formula(paste("y~", paste(Qs, collapse="+")))
-#lodmat.F<-getprofile(fg.cr.obj, qtl =  qtl, pheno.cols = get(paste(t2, 'cols', sep=".")), formula = my.formula, method = "hk", verbose = F, tpy="comb")
+lodmat.F<-getprofile(fg.cr.obj, qtl =  qtl, pheno.cols = get(paste(t2, 'cols', sep=".")), formula = my.formula, method = "hk", verbose = F, tpy="comb")
 
 assign(paste('out.mqm.F', t2, 'mlod', sep="_"), out.mqm.F)
 assign(paste('chr', t2, 'mlod', sep="_"), chr)
 assign(paste('pos', t2, 'mlod', sep="_"), pos)
 assign(paste('qtl', t2, 'mlod', sep="_"), qtl)
 assign(paste('my.formula', t2, 'mlod', sep="_"), my.formula)
-#assign(paste('lodmat.F', t2, 'mlod', sep="_"), lodmat.F)
+assign(paste('lodmat.F', t2, 'mlod', sep="_"), lodmat.F)
 
 # Make plots of the QTL LOD profile and the LOD profile over time
-#par(mfrow=c(2,1))
-#pdf(paste('mqm_timeseries_qtl_', job, ".", t2, '_mlod.pdf', sep=""))
-#plotprofile(lodmat.F, mval = 8, col=heat.colors(100)[100:1], main="MLOD")
+par(mfrow=c(2,1))
+pdf(paste('mqm_timeseries_qtl_', job, ".", t2, '_mlod.pdf', sep=""))
+plotprofile(lodmat.F, mval = 8, times=as.numeric(days), col=heat.colors(100)[100:1], main="MLOD")
 refqtlmlod <- refineqtlF(fg.cr.obj, pheno.cols = get(paste(t2, 'cols', sep=".")), usec = "mlod", qtl= qtl, method = "hk", keeplodprofile = T)
-#plotLodProfile(refqtlmlod)
-#dev.off()
+plotLodProfile(refqtlmlod)
+dev.off()
 par(mfrow=c(1,1))
 
 assign(paste('refqtlmlod', t2, 'mlod', sep="_"), refqtlmlod)
-#mlodeff <- vector("list", length(get(paste(t2, 'cols', sep="."))))
+mlodeff <- vector("list", length(get(paste(t2, 'cols', sep="."))))
 
-#for(i in 1:length(mlodeff)) {
-#  mlodeff[[i]] <- summary(fitqtl(fg.cr.obj, phe=i+(min(get(paste(t2, 'cols', sep=".")))-1), qtl=qtl,
-#                                 method="hk", get.ests=TRUE,
-#                                 dropone=FALSE))$ests[,1]*c(1,2,2)
-#}
+for(i in 1:length(mlodeff)) {
+  mlodeff[[i]] <- summary(fitqtl(fg.cr.obj, phe=i+(min(get(paste(t2, 'cols', sep=".")))-1), qtl=qtl,
+                                 method="hk", get.ests=TRUE,
+                                 dropone=FALSE))$ests[,1]*c(1,2,2)
+}
 
 pname_list<-strsplit(phenames(fg.cr.obj)[get(paste(t2, 'cols', sep="."))], '_')
 
@@ -1353,33 +1353,33 @@ for(p in 1:length(pname_list)) {
   days<-c(days,pname_list[[p]][length(pname_list[[1]])-1])
 }
 
-#nam <- names(mlodeff[[1]])
-#mlodeff <- matrix(unlist(mlodeff), byrow=TRUE, ncol=length(nam))
-#colnames(mlodeff) <- nam
+nam <- names(mlodeff[[1]])
+mlodeff <- matrix(unlist(mlodeff), byrow=TRUE, ncol=length(nam))
+colnames(mlodeff) <- nam
 
-#n.col<-ncol(mlodeff)
+n.col<-ncol(mlodeff)
 
 # Lets plot the effect size over time
-#par(mfrow=c(1,n.col))
-#pdf(paste('mqm_timeseries_fx_size_mlod_', job, ".", t2, ".pdf", sep=""))
+par(mfrow=c(1,n.col))
+pdf(paste('mqm_timeseries_fx_size_mlod_', job, ".", t2, ".pdf", sep=""))
 # Draw a plot of the intercept
-#plot(days, mlodeff[,1], lwd=2, type="l",
-#     xlab="Days after planting",
-#     ylab="Height (cm)", col="red")
-#mtext("baseline curve", side=3, line=0.5)
+plot(days, mlodeff[,1], lwd=2, type="l",
+     xlab="Days after planting",
+     ylab="Height (cm)", col="red")
+     mtext("baseline curve", side=3, line=0.5)
 # Now add plot of effect size for each QTL
-#for (i in 2:n.col) {
-#  plot(days, mlodeff[,i], lwd=2, type="l",
-#       xlab="Days after planting",
-#       ylab="QTL effect (cm)", col="red")
-#  mtext(colnames(mlodeff)[i], side=3, line=0.5)
-#}
+for (i in 2:n.col) {
+  plot(days, mlodeff[,i], lwd=2, type="l",
+       xlab="Days after planting",
+       ylab="QTL effect (cm)", col="red")
+  mtext(colnames(mlodeff)[i], side=3, line=0.5)
+}
 
-#dev.off()
-#par(mfrow=c(1,1))
+dev.off()
+par(mfrow=c(1,1))
 
-#assign(paste('mlodeff', t2, 'mlod', sep="_"), mlodeff)
-#write.csv(mlodeff, file=paste('mlodeff_', t2, "_", job, '.csv', sep=""), quote=F, row.names=F)
+assign(paste('mlodeff', t2, 'mlod', sep="_"), mlodeff)
+write.csv(mlodeff, file=paste('mlodeff_', t2, "_", job, '.csv', sep=""), quote=F, row.names=F)
 # get marker names
 m.names<-find.marker(fg.cr.obj, chr, pos)
 
@@ -1464,50 +1464,50 @@ if(out.mqm.F$n.qtl == 1){
   chr<-out.mqm.F$chr
   pos<-out.mqm.F$pos
   
-  #if (length(chr) == 1) {
-  #  temp<-summary(out.F)
-  #  temp<-temp[temp$chr != chr,]
-  #  temp<-temp[order(temp$mlod, decreasing=T),]
-  #  chr<-c(chr, temp[1,'chr'])
-  #  pos<-c(pos, temp[1,'pos'])
-  #}
+  if (length(chr) == 1) {
+    temp<-summary(out.F)
+    temp<-temp[temp$chr != chr,]
+    temp<-temp[order(temp$mlod, decreasing=T),]
+    chr<-c(chr, temp[1,'chr'])
+    pos<-c(pos, temp[1,'pos'])
+  }
   
-  #if (length(chr) == 0) {
-  #  temp<-summary(out.F)
-  #  temp<-temp[order(temp$mlod, decreasing=T),]
-  #  chr<-temp[1:2, 'chr']
-  #  pos<-temp[1:2, 'pos']
-  #}
+  if (length(chr) == 0) {
+    temp<-summary(out.F)
+    temp<-temp[order(temp$mlod, decreasing=T),]
+    chr<-temp[1:2, 'chr']
+    pos<-temp[1:2, 'pos']
+  }
   
   qtl<-makeqtl(fg.cr.obj, chr, pos, what=c("prob"))
   Qs<-paste('Q', 1:length(pos), sep="")
   my.formula<-as.formula(paste("y~", paste(Qs, collapse="+")))
-  #lodmat.F<-getprofile(fg.cr.obj, qtl =  qtl, pheno.cols = get(paste(t2, 'cols', sep=".")), formula = my.formula, method = "hk", verbose = F, tpy="comb")
+  lodmat.F<-getprofile(fg.cr.obj, qtl =  qtl, pheno.cols = get(paste(t2, 'cols', sep=".")), formula = my.formula, method = "hk", verbose = F, tpy="comb")
   
   assign(paste('out.mqm.F', t2, 'mlod', sep="_"), out.mqm.F)
   assign(paste('chr', t2, 'mlod', sep="_"), chr)
   assign(paste('pos', t2, 'mlod', sep="_"), pos)
   assign(paste('qtl', t2, 'mlod', sep="_"), qtl)
   assign(paste('my.formula', t2, 'mlod', sep="_"), my.formula)
-  #assign(paste('lodmat.F', t2, 'mlod', sep="_"), lodmat.F)
+  assign(paste('lodmat.F', t2, 'mlod', sep="_"), lodmat.F)
   
   # Make plots of the QTL LOD profile and the LOD profile over time
-  #par(mfrow=c(2,1))
-  #pdf(paste('mqm_timeseries_qtl_', job, ".", t2, '_mlod.pdf', sep=""))
-  #plotprofile(lodmat.F, mval = 8, col=heat.colors(100)[100:1], main="MLOD")
+  par(mfrow=c(2,1))
+  pdf(paste('mqm_timeseries_qtl_', job, ".", t2, '_mlod.pdf', sep=""))
+  plotprofile(lodmat.F, mval = 8, times=as.numeric(days), col=heat.colors(100)[100:1], main="MLOD")
   refqtlmlod <- refineqtlF(fg.cr.obj, pheno.cols = get(paste(t2, 'cols', sep=".")), usec = "mlod", qtl= qtl, method = "hk", keeplodprofile = T)
-  #plotLodProfile(refqtlmlod)
-  #dev.off()
+  plotLodProfile(refqtlmlod)
+  dev.off()
   par(mfrow=c(1,1))
   
   assign(paste('refqtlmlod', t2, 'mlod', sep="_"), refqtlmlod)
-  #mlodeff <- vector("list", length(get(paste(t2, 'cols', sep="."))))
+  mlodeff <- vector("list", length(get(paste(t2, 'cols', sep="."))))
   
-  #for(i in 1:length(mlodeff)) {
-  #  mlodeff[[i]] <- summary(fitqtl(fg.cr.obj, phe=i+(min(get(paste(t2, 'cols', sep=".")))-1), qtl=qtl,
-  #                                 method="hk", get.ests=TRUE,
-  #                                 dropone=FALSE))$ests[,1]*c(1,2,2)
-  #}
+  for(i in 1:length(mlodeff)) {
+    mlodeff[[i]] <- summary(fitqtl(fg.cr.obj, phe=i+(min(get(paste(t2, 'cols', sep=".")))-1), qtl=qtl,
+                                   method="hk", get.ests=TRUE,
+                                   dropone=FALSE))$ests[,1]*c(1,2,2)
+  }
   
   pname_list<-strsplit(phenames(fg.cr.obj)[get(paste(t2, 'cols', sep="."))], '_')
   
@@ -1516,33 +1516,33 @@ if(out.mqm.F$n.qtl == 1){
     days<-c(days,pname_list[[p]][length(pname_list[[1]])-1])
   }
   
-  #nam <- names(mlodeff[[1]])
-  #mlodeff <- matrix(unlist(mlodeff), byrow=TRUE, ncol=length(nam))
-  #colnames(mlodeff) <- nam
+  nam <- names(mlodeff[[1]])
+  mlodeff <- matrix(unlist(mlodeff), byrow=TRUE, ncol=length(nam))
+  colnames(mlodeff) <- nam
   
-  #n.col<-ncol(mlodeff)
+  n.col<-ncol(mlodeff)
   
   # Lets plot the effect size over time
-  #par(mfrow=c(1,n.col))
-  #pdf(paste('mqm_timeseries_fx_size_mlod_', job, ".", t2, ".pdf", sep=""))
+  par(mfrow=c(1,n.col))
+  pdf(paste('mqm_timeseries_fx_size_mlod_', job, ".", t2, ".pdf", sep=""))
   # Draw a plot of the intercept
-  #plot(days, mlodeff[,1], lwd=2, type="l",
-  #     xlab="Days after planting",
-  #     ylab="Height (cm)", col="red")
-  #mtext("baseline curve", side=3, line=0.5)
+  plot(days, mlodeff[,1], lwd=2, type="l",
+       xlab="Days after planting",
+       ylab="Height (cm)", col="red")
+  mtext("baseline curve", side=3, line=0.5)
   # Now add plot of effect size for each QTL
-  #for (i in 2:n.col) {
-  #  plot(days, mlodeff[,i], lwd=2, type="l",
-  #       xlab="Days after planting",
-  #       ylab="QTL effect (cm)", col="red")
-  #  mtext(colnames(mlodeff)[i], side=3, line=0.5)
-  #}
+  for (i in 2:n.col) {
+    plot(days, mlodeff[,i], lwd=2, type="l",
+         xlab="Days after planting",
+         ylab="QTL effect (cm)", col="red")
+    mtext(colnames(mlodeff)[i], side=3, line=0.5)
+  }
   
-  #dev.off()
-  #par(mfrow=c(1,1))
+  dev.off()
+  par(mfrow=c(1,1))
   
-  #assign(paste('mlodeff', t2, 'mlod', sep="_"), mlodeff)
-  #write.csv(mlodeff, file=paste('mlodeff_', t2, "_", job, '.csv', sep=""), quote=F, row.names=F)
+  assign(paste('mlodeff', t2, 'mlod', sep="_"), mlodeff)
+  write.csv(mlodeff, file=paste('mlodeff_', t2, "_", job, '.csv', sep=""), quote=F, row.names=F)
   # get marker names
   m.names<-find.marker(fg.cr.obj, chr, pos)
   
@@ -1620,33 +1620,33 @@ pos<-as.numeric(as.character(unique_qtl_t2$pos))
 qtl<-makeqtl(fg.cr.obj, unique_qtl_t2$chr, unique_qtl_t2$pos, what=c("prob"))
 Qs<-paste('Q', 1:length(unique_qtl_t2$pos), sep="")
 my.formula<-as.formula(paste("y~", paste(Qs, collapse="+")))
-#lodmat.F<-getprofile(fg.cr.obj, qtl =  qtl, pheno.cols = get(paste(t2, 'cols', sep=".")), formula = my.formula, method = "hk", verbose = F, tpy="comb")
+lodmat.F<-getprofile(fg.cr.obj, qtl =  qtl, pheno.cols = get(paste(t2, 'cols', sep=".")), formula = my.formula, method = "hk", verbose = F, tpy="comb")
 
 assign(paste('chr', t2, 'all_qtl', sep="_"), chr)
 assign(paste('pos', t2, 'all_qtl', sep="_"), pos)
 assign(paste('qtl', t2, 'all_qtl', sep="_"), qtl)
 assign(paste('my.formula', t2, 'all_qtl', sep="_"), my.formula)
-#assign(paste('lodmat.F', t2, 'all_qtl', sep="_"), lodmat.F)
+assign(paste('lodmat.F', t2, 'all_qtl', sep="_"), lodmat.F)
 
 
 # Make plots of the QTL LOD profile and the LOD profile over time
-#par(mfrow=c(1,1))
-#pdf(paste('mqm_timeseries_qtl_', job, ".", t2, '_all_qtl.pdf', sep=""))
-#plotprofile(lodmat.F, mval = 8, col=heat.colors(100)[100:1], main="All QTL")
-#refqtlslod <- refineqtlF(fg.cr.obj, pheno.cols = get(paste(t2, 'cols', sep=".")), usec = "slod", qtl= qtl, method = "hk", keeplodprofile = T)
-#plotLodProfile(refqtlslod)
-#dev.off()
+par(mfrow=c(1,1))
+pdf(paste('mqm_timeseries_qtl_', job, ".", t2, '_all_qtl.pdf', sep=""))
+plotprofile(lodmat.F, mval = 8, times=as.numeric(days), col=heat.colors(100)[100:1], main="All QTL")
+refqtlslod <- refineqtlF(fg.cr.obj, pheno.cols = get(paste(t2, 'cols', sep=".")), usec = "slod", qtl= qtl, method = "hk", keeplodprofile = T)
+plotLodProfile(refqtlslod)
+dev.off()
 par(mfrow=c(1,1))
 
-#assign(paste('refqtlslod', t2, 'all_qtl', sep="_"), refqtlslod)
+assign(paste('refqtlslod', t2, 'all_qtl', sep="_"), refqtlslod)
 
-#klodeff <- vector("list", length(get(paste(t2, 'cols', sep="."))))
+klodeff <- vector("list", length(get(paste(t2, 'cols', sep="."))))
 
-#for(i in 1:length(klodeff)) {
-#  klodeff[[i]] <- summary(fitqtl(fg.cr.obj, phe=i+(min(get(paste(t2, 'cols', sep=".")))-1), qtl=qtl,
-#                                 method="hk", get.ests=TRUE,
-#                                 dropone=FALSE))$ests[,1]*c(1,2,2)
-#}
+for(i in 1:length(klodeff)) {
+  klodeff[[i]] <- summary(fitqtl(fg.cr.obj, phe=i+(min(get(paste(t2, 'cols', sep=".")))-1), qtl=qtl,
+                                 method="hk", get.ests=TRUE,
+                                 dropone=FALSE))$ests[,1]*c(1,2,2)
+}
 
 pname_list<-strsplit(phenames(fg.cr.obj)[get(paste(t2, 'cols', sep="."))], '_')
 
@@ -1655,35 +1655,35 @@ for(p in 1:length(pname_list)) {
   days<-c(days,pname_list[[p]][length(pname_list[[1]])-1])
 }
 
-#nam <- names(klodeff[[1]])
-#klodeff <- matrix(unlist(klodeff), byrow=TRUE, ncol=length(nam))
-#colnames(klodeff) <- nam
+nam <- names(klodeff[[1]])
+klodeff <- matrix(unlist(klodeff), byrow=TRUE, ncol=length(nam))
+colnames(klodeff) <- nam
 
-#n.col<-ncol(klodeff)
+n.col<-ncol(klodeff)
 
 # Lets plot the effect size over time
-#par(mfrow=c(1,n.col))
-#pdf(paste('mqm_timeseries_fx_size_all_qtl_', job, ".", t2, ".pdf", sep=""))
+par(mfrow=c(1,n.col))
+pdf(paste('mqm_timeseries_fx_size_all_qtl_', job, ".", t2, ".pdf", sep=""))
 # Draw a plot of the intercept
-#plot(days, klodeff[,1], lwd=2, type="l",
-#     xlab="Days after planting",
-#     ylab="Height (cm)", col="red")
-#mtext("baseline curve", side=3, line=0.5)
+plot(days, klodeff[,1], lwd=2, type="l",
+     xlab="Days after planting",
+     ylab="Height (cm)", col="red")
+mtext("baseline curve", side=3, line=0.5)
 # Now add plot of effect size for each QTL
-#for (i in 2:n.col) {
-#  plot(days, klodeff[,i], lwd=2, type="l",
-#       xlab="Days after planting",
-#       ylab="QTL effect (cm)", col="red")
-#  mtext(colnames(klodeff)[i], side=3, line=0.5)
-#}
+for (i in 2:n.col) {
+  plot(days, klodeff[,i], lwd=2, type="l",
+       xlab="Days after planting",
+       ylab="QTL effect (cm)", col="red")
+  mtext(colnames(klodeff)[i], side=3, line=0.5)
+}
 
 
-#dev.off()
-#par(mfrow=c(1,1))
+dev.off()
+par(mfrow=c(1,1))
 
-#assign(paste('klodeff', t2, 'all_qtl', sep="_"), klodeff)
+assign(paste('klodeff', t2, 'all_qtl', sep="_"), klodeff)
 
-#write.csv(klodeff, file=paste('klodeff_', t2, "_", job, '.csv', sep=""), quote=F, row.names=F)
+write.csv(klodeff, file=paste('klodeff_', t2, "_", job, '.csv', sep=""), quote=F, row.names=F)
 
 
 # get marker names
