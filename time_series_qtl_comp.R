@@ -139,7 +139,7 @@ par(mfrow=c(1,1))
 
 # MQM
 # First SLOD
-out.mqm.F<-stepwiseqtlF(fg.cr.obj, pheno.cols = get(paste(t1, 'cols', sep=".")), max.qtl=9, usec= "slod", method="hk", penalties=c(max.perm.F[1],0,0))
+out.mqm.F<-stepwiseqtlF(fg.cr.obj, pheno.cols = get(paste(t1, 'cols', sep=".")), max.qtl=3, usec= "slod", method="hk", penalties=c(max.perm.F[1],0,0))
 
 if(out.mqm.F$n.qtl > 1 ) {
 
@@ -188,11 +188,15 @@ assign(paste('refqtlslod', t1, 'slod', sep="_"), refqtlslod)
 
 slodeff <- vector("list", length(get(paste(t1, 'cols', sep="."))))
 
+# Make a multiplicaiton vector
+m.vect<-c(1, rep(2, length(slodeff)))
+
 for(i in 1:length(slodeff)) {
   slodeff[[i]] <- summary(fitqtl(fg.cr.obj, phe=i+(min(get(paste(t1, 'cols', sep=".")))-1), qtl=qtl,
                                  method="hk", get.ests=TRUE,
-                                 dropone=FALSE))$ests[,1]*c(1,2,2)
+                                 dropone=FALSE))$ests[,1]*m.vect
 }
+
 
 pname_list<-strsplit(phenames(fg.cr.obj)[get(paste(t1, 'cols', sep="."))], '_')
 
@@ -354,10 +358,13 @@ if(out.mqm.F$n.qtl == 1){
   assign(paste('refqtlslod', t1, 'slod', sep="_"), refqtlslod)
   slodeff <- vector("list", length(get(paste(t1, 'cols', sep="."))))
   
+  # Make a multiplicaiton vector
+  m.vect<-c(1, rep(2, length(slodeff)))
+
   for(i in 1:length(slodeff)) {
     slodeff[[i]] <- summary(fitqtl(fg.cr.obj, phe=i+(min(get(paste(t1, 'cols', sep=".")))-1), qtl=qtl,
                                    method="hk", get.ests=TRUE,
-                                   dropone=FALSE))$ests[,1]*c(1,2,2)
+                                   dropone=FALSE))$ests[,1]*m.vect
   }
   
   pname_list<-strsplit(phenames(fg.cr.obj)[get(paste(t1, 'cols', sep="."))], '_')
@@ -464,7 +471,7 @@ save.image(file=paste('timeseries_', t1, '_cross.object.raw.Rdata', sep=""))
 
 # MQM
 # Now MLOD
-out.mqm.F<-stepwiseqtlF(fg.cr.obj, pheno.cols = get(paste(t1, 'cols', sep=".")), max.qtl=9, usec= "mlod", method="hk", penalties=c(max.perm.F[2],0,0))
+out.mqm.F<-stepwiseqtlF(fg.cr.obj, pheno.cols = get(paste(t1, 'cols', sep=".")), max.qtl=3, usec= "mlod", method="hk", penalties=c(max.perm.F[2],0,0))
 
 if(out.mqm.F$n.qtl > 1) {
  
@@ -513,12 +520,13 @@ assign(paste('refqtlmlod', t1, 'mlod', sep="_"), refqtlmlod)
 
 mlodeff <- vector("list", length(get(paste(t1, 'cols', sep="."))))
 
-### Problem crops up here
+# Make a multiplicaiton vector
+m.vect<-c(1, rep(2, length(mlodeff)))
 
 for(i in 1:length(mlodeff)) {
   mlodeff[[i]] <- summary(fitqtl(fg.cr.obj, phe=i+(min(get(paste(t1, 'cols', sep=".")))-1), qtl=qtl,
                                  method="hk", get.ests=TRUE,
-                                 dropone=FALSE))$ests[,1]*c(1,2,2)
+                                 dropone=FALSE))$ests[,1]*m.vect
 }
 
 pname_list<-strsplit(phenames(fg.cr.obj)[get(paste(t1, 'cols', sep="."))], '_')
@@ -679,11 +687,13 @@ if(out.mqm.F$n.qtl == 1){
   
   assign(paste('refqtlmlod', t1, 'mlod', sep="_"), refqtlmlod)
   mlodeff <- vector("list", length(get(paste(t1, 'cols', sep="."))))
+  # Make a multiplicaiton vector
+  m.vect<-c(1, rep(2, length(mlodeff)))
   
   for(i in 1:length(mlodeff)) {
     mlodeff[[i]] <- summary(fitqtl(fg.cr.obj, phe=i+(min(get(paste(t1, 'cols', sep=".")))-1), qtl=qtl,
                                    method="hk", get.ests=TRUE,
-                                   dropone=FALSE))$ests[,1]*c(1,2,2)
+                                   dropone=FALSE))$ests[,1]*m.vect
   }
   
   pname_list<-strsplit(phenames(fg.cr.obj)[get(paste(t1, 'cols', sep="."))], '_')
@@ -816,11 +826,13 @@ par(mfrow=c(1,1))
 assign(paste('refqtlslod', t1, 'all_qtl', sep="_"), refqtlslod)
 
 klodeff <- vector("list", length(get(paste(t1, 'cols', sep="."))))
+# Make a multiplicaiton vector
+m.vect<-c(1, rep(2, length(klodeff)))
 
 for(i in 1:length(klodeff)) {
   klodeff[[i]] <- summary(fitqtl(fg.cr.obj, phe=i+(min(get(paste(t1, 'cols', sep=".")))-1), qtl=qtl,
                                  method="hk", get.ests=TRUE,
-                                 dropone=FALSE))$ests[,1]*c(1,2,2)
+                                 dropone=FALSE))$ests[,1]*m.vect
 }
 
 pname_list<-strsplit(phenames(fg.cr.obj)[get(paste(t1, 'cols', sep="."))], '_')
@@ -976,7 +988,7 @@ par(mfrow=c(1,1))
 
 # MQM
 # First SLOD
-out.mqm.F<-stepwiseqtlF(fg.cr.obj, pheno.cols = get(paste(t2, 'cols', sep=".")), max.qtl=9, usec= "slod", method="hk", penalties=c(max.perm.F[1],0,0))
+out.mqm.F<-stepwiseqtlF(fg.cr.obj, pheno.cols = get(paste(t2, 'cols', sep=".")), max.qtl=3, usec= "slod", method="hk", penalties=c(max.perm.F[1],0,0))
 
 if(out.mqm.F$n.qtl > 1) {
 chr<-out.mqm.F$chr
@@ -1021,11 +1033,13 @@ par(mfrow=c(1,1))
 assign(paste('refqtlslod', t2, 'slod', sep="_"), refqtlslod)
 
 slodeff <- vector("list", length(get(paste(t2, 'cols', sep="."))))
+# Make a multiplicaiton vector
+m.vect<-c(1, rep(2, length(slodeff)))
 
 for(i in 1:length(slodeff)) {
   slodeff[[i]] <- summary(fitqtl(fg.cr.obj, phe=i+(min(get(paste(t2, 'cols', sep=".")))-1), qtl=qtl,
                                  method="hk", get.ests=TRUE,
-                                 dropone=FALSE))$ests[,1]*c(1,2,2)
+                                 dropone=FALSE))$ests[,1]*m.vect
 }
 
 pname_list<-strsplit(phenames(fg.cr.obj)[get(paste(t2, 'cols', sep="."))], '_')
@@ -1184,11 +1198,13 @@ if(out.mqm.F$n.qtl == 1){
   
   assign(paste('refqtlslod', t2, 'slod', sep="_"), refqtlslod)
   slodeff <- vector("list", length(get(paste(t2, 'cols', sep="."))))
-  
+  # Make a multiplicaiton vector
+  m.vect<-c(1, rep(2, length(slodeff)))
+
   for(i in 1:length(slodeff)) {
     slodeff[[i]] <- summary(fitqtl(fg.cr.obj, phe=i+(min(get(paste(t2, 'cols', sep=".")))-1), qtl=qtl,
                                    method="hk", get.ests=TRUE,
-                                   dropone=FALSE))$ests[,1]*c(1,2,2)
+                                   dropone=FALSE))$ests[,1]*m.vect
   }
   
   pname_list<-strsplit(phenames(fg.cr.obj)[get(paste(t2, 'cols', sep="."))], '_')
@@ -1294,7 +1310,7 @@ save.image(file=paste('timeseries_', t2, '_cross.object.raw.Rdata', sep=""))
 
 # MQM
 # Now MLOD
-out.mqm.F<-stepwiseqtlF(fg.cr.obj, pheno.cols = get(paste(t2, 'cols', sep=".")), max.qtl=9, usec= "mlod", method="hk", penalties=c(max.perm.F[2],0,0))
+out.mqm.F<-stepwiseqtlF(fg.cr.obj, pheno.cols = get(paste(t2, 'cols', sep=".")), max.qtl=3, usec= "mlod", method="hk", penalties=c(max.perm.F[2],0,0))
 
 if(out.mqm.F$n.qtl > 1) {
 
@@ -1339,11 +1355,13 @@ par(mfrow=c(1,1))
 
 assign(paste('refqtlmlod', t2, 'mlod', sep="_"), refqtlmlod)
 mlodeff <- vector("list", length(get(paste(t2, 'cols', sep="."))))
+# Make a multiplicaiton vector
+m.vect<-c(1, rep(2, length(mlodeff)))
 
 for(i in 1:length(mlodeff)) {
   mlodeff[[i]] <- summary(fitqtl(fg.cr.obj, phe=i+(min(get(paste(t2, 'cols', sep=".")))-1), qtl=qtl,
                                  method="hk", get.ests=TRUE,
-                                 dropone=FALSE))$ests[,1]*c(1,2,2)
+                                 dropone=FALSE))$ests[,1]*m.vect
 }
 
 pname_list<-strsplit(phenames(fg.cr.obj)[get(paste(t2, 'cols', sep="."))], '_')
@@ -1502,11 +1520,13 @@ if(out.mqm.F$n.qtl == 1){
   
   assign(paste('refqtlmlod', t2, 'mlod', sep="_"), refqtlmlod)
   mlodeff <- vector("list", length(get(paste(t2, 'cols', sep="."))))
+  # Make a multiplicaiton vector
+  m.vect<-c(1, rep(2, length(mlodeff)))
   
   for(i in 1:length(mlodeff)) {
     mlodeff[[i]] <- summary(fitqtl(fg.cr.obj, phe=i+(min(get(paste(t2, 'cols', sep=".")))-1), qtl=qtl,
                                    method="hk", get.ests=TRUE,
-                                   dropone=FALSE))$ests[,1]*c(1,2,2)
+                                   dropone=FALSE))$ests[,1]*m.vect
   }
   
   pname_list<-strsplit(phenames(fg.cr.obj)[get(paste(t2, 'cols', sep="."))], '_')
@@ -1641,11 +1661,13 @@ par(mfrow=c(1,1))
 assign(paste('refqtlslod', t2, 'all_qtl', sep="_"), refqtlslod)
 
 klodeff <- vector("list", length(get(paste(t2, 'cols', sep="."))))
+# Make a multiplicaiton vector
+m.vect<-c(1, rep(2, length(klodeff)))
 
 for(i in 1:length(klodeff)) {
   klodeff[[i]] <- summary(fitqtl(fg.cr.obj, phe=i+(min(get(paste(t2, 'cols', sep=".")))-1), qtl=qtl,
                                  method="hk", get.ests=TRUE,
-                                 dropone=FALSE))$ests[,1]*c(1,2,2)
+                                 dropone=FALSE))$ests[,1]*m.vect
 }
 
 pname_list<-strsplit(phenames(fg.cr.obj)[get(paste(t2, 'cols', sep="."))], '_')

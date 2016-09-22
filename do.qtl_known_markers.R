@@ -12,6 +12,9 @@ outstem <- args[2]
 i<-as.numeric(i)
 trait<-args[3]
 workspace<-args[4]
+trait_model<-args[5]
+qtl_method<-args[6]
+
 dir<-getwd()
 dir.stem <-paste(dir, outstem, sep="/")
 load(paste(dir.stem, workspace, sep="/"))
@@ -40,12 +43,12 @@ phevalues<-phevalues[order(phevalues[,2]),]
 assign(paste("phevalues",pname,sep="."),phevalues)
 write.csv(phevalues, file=paste(dirpname,"/ordered_phe_vals_", pname, ".csv", sep=""), quote=F, row.names=F)
 
-# perform scanone QTL analysis on a fill.geno cross object using method "hk" and default paramters
-out.so <- scanone(fg.cr.obj, pheno.col=i, method=c("hk"))
+# perform scanone QTL analysis on a fill.geno cross object using method qtl_method and default paramters
+out.so <- scanone(fg.cr.obj, pheno.col=i, method=qtl_method, model=trait_model)
 assign(paste("out.so",pname,sep="."), out.so)
 
 # perform significance test using permutation (1000)
-operm.so<-scanone(fg.cr.obj, pheno.col=i, method=c("hk"), n.perm=1000)
+operm.so<-scanone(fg.cr.obj, pheno.col=i, method=qtl_method, n.perm=1000, model=trait_model)
 assign(paste("operm.so",pname,sep="."), operm.so)
 # Get permutation significance threshold (p < 0.05)
 max.perm.so<-max(summary(operm.so, alpha=0.05))
@@ -79,14 +82,14 @@ save.image(file=paste(dirpname,  session_image_name, sep="/" ))
 
 
 # Do scantwo to look for QTL interactions/epistasis
-#out.s2<-scantwo(fg.cr.obj, pheno.col=i, method='hk')
+#out.s2<-scantwo(fg.cr.obj, pheno.col=i, method=qtl_method)
 #assign(paste('out.s2', pname, sep="."), out.s2)
 #pdf(file=paste(dir_known_markers,"/scantwo.qtls.",pname, ".pdf", sep=""))
 #plot(out.s2, main=pname)
 #dev.off()
 
 # Do scantwo permutation analysis
-#operm.s2<-scantwo(fg.cr.obj, pheno.col=i, method='hk', n.perm=100)
+#operm.s2<-scantwo(fg.cr.obj, pheno.col=i, method=qtl_method, n.perm=100)
 #assign(paste('operm.s2', pname, sep="."), operm.s2)
 
 # Obtain a permissive set of penalties during initial 'stepwise' QTL model search, we will use these as co-factors in MQM
@@ -167,13 +170,13 @@ if (nrow(known_markers) > 0 ) {
     assign(paste('so.formula', pname, sep="."), my.formula)
     
     # Fine-tune QTL location
-    #revqtl<-refineqtl(fg.cr.obj, pheno.col=i, qtl=qtl, formula = my.formula, method=c("hk"))
+    #revqtl<-refineqtl(fg.cr.obj, pheno.col=i, qtl=qtl, formula = my.formula, method=qtl_method)
     #assign(paste('so.revqtl', pname, sep="."), revqtl)
     
     # Fit a mulitple QTL model based upon the formula derived above and the fine tuned QTL location
     #
     
-    out.fitqtl<-fitqtl(fg.cr.obj, pheno.col=i, qtl=qtl, formula=my.formula, method='hk', get.ests=T)
+    out.fitqtl<-fitqtl(fg.cr.obj, pheno.col=i, qtl=qtl, formula=my.formula, method=qtl_method, get.ests=T)
     assign(paste('known_qtl.out.fitqtl', pname, sep="."), out.fitqtl)
     
     # Proportioning of variance for scanone results (full model)
@@ -270,11 +273,14 @@ if (nrow(known_markers) > 0 ) {
 ####################           
 # Stepwise MQM analysis
 ####################
-    
+
+    # If trait model is not normal or binary set to normal
+   if (trait_model != 'normal' | trait_model != 'binary') {trait_model<-c("normal")}
+
     # Perform positive stepwise forward and reverse model selection given formula, fine tuned QTL location, and penalites
-    stepout.a<-stepwiseqtl(fg.cr.obj, pheno.col=i, qtl=qtl, formula=my.formula, method="hk", penalties=pen_heavy, max.qtl=25, scan.pairs=T, additive.only=T, model=c("normal"))
+    stepout.a<-stepwiseqtl(fg.cr.obj, pheno.col=i, qtl=qtl, formula=my.formula, method=qtl_method, penalties=pen_heavy, max.qtl=3, scan.pairs=T, additive.only=T, model=trait_model)
     assign(paste('stepout.a', pname, sep="."), stepout.a)
-    stepout.a.lite<-stepwiseqtl(fg.cr.obj, pheno.col=i, qtl=qtl, formula=my.formula, method="hk", penalties=pen_lite, max.qtl=25, scan.pairs=T, additive.only=T, model=c("normal"))
+    stepout.a.lite<-stepwiseqtl(fg.cr.obj, pheno.col=i, qtl=qtl, formula=my.formula, method=qtl_method, penalties=pen_lite, max.qtl=3, scan.pairs=T, additive.only=T, model=trait_model)
     assign(paste('stepout.a.lite', pname, sep="."), stepout.a.lite)
     save.image(paste(dirpname, session_image_name, sep="/"))
 
@@ -324,11 +330,11 @@ if (nrow(known_markers) > 0 ) {
     assign(paste('mqm.formula', pname, sep="."), my.formula.mqm)
 
     # Fine-tune QTL location
-    revqtl.mqm<-refineqtl(fg.cr.obj, pheno.col=i, qtl=qtl.mqm, formula = my.formula.mqm, method=c("hk"))
+    revqtl.mqm<-refineqtl(fg.cr.obj, pheno.col=i, qtl=qtl.mqm, formula = my.formula.mqm, method=qtl_method)
     assign(paste('mqm.revqtl', pname, sep="."), revqtl.mqm)
 
     # Fit a mulitple QTL model based upon the formula derived above and the fine tuned QTL location
-    out.fitqtl.mqm<-fitqtl(fg.cr.obj, pheno.col=i, qtl=revqtl.mqm, formula=my.formula.mqm, method='hk', get.ests=T)
+    out.fitqtl.mqm<-fitqtl(fg.cr.obj, pheno.col=i, qtl=revqtl.mqm, formula=my.formula.mqm, method=qtl_method, get.ests=T)
     assign(paste('mqm.out.fitqtl', pname, sep="."), out.fitqtl.mqm)
 
     # Proportioning of variance for scanone results (full model)

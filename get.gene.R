@@ -97,10 +97,10 @@ if (file.exists(mqm.qtl)) {
     annotation.out<-rbind(annotation.out, qtl.out)
   }
   
-  annotation.file<-paste(path.mqm, "/genes_in_qtl_CI_", trait, ".csv", sep="")
+  annotation.file<-paste(path.mqm, "/genes_in_qtl_CI_", trait, ".txt", sep="")
   write.table(annotation.out, file=annotation.file, quote=F, row.names=F,sep = "\t")
     
 } else {
-  annotation.file<-paste(path.mqm, "/genes_in_qtl_CI_",  trait, ".csv", sep="")
+  annotation.file<-paste(path.mqm, "/genes_in_qtl_CI_",  trait, ".txt", sep="")
   write("No significant QTL in MQM", file=annotation.file)
 }

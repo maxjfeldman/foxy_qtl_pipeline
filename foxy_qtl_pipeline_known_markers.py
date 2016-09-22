@@ -20,9 +20,9 @@ parser.add_option("-o", "--output") # Required
 parser.add_option("-c", "--comparison") # Required
 parser.add_option("-m", "--map") # Optional
 parser.add_option("-s", "--server") # Optional (Are you on a server?)
-parser.add_option("-d", "--model") # Optional(what type of distribution describes the trait?)
-parser.add_option("-q", "--qtl") # Optional (what is the method you want to use for qtl analysis?)
-parser.add_option("-t", "--type") # Optional(what type of cross is this?)
+parser.add_option("-d", "--model", default = "normal") # Optional(what type of distribution describes the trait?)
+parser.add_option("-q", "--qtl", default= "hk") # Optional (what is the method you want to use for qtl analysis?)
+parser.add_option("-t", "--type", default= "riself") # Optional(what type of cross is this?)
 
 (options, args) = parser.parse_args()
 
@@ -39,6 +39,10 @@ server = options.server
 trait_model = options.model
 qtl_method = options.qtl
 cross_type = options.type
+
+if trait_model == 'binary':
+    comparison = 'n'
+
 
 # If no directory to store data is present, go ahead and create it
 if not os.path.exists(pwd+"/"+outfile):
@@ -178,7 +182,7 @@ if re.match('y', server):
             print "Working on treatment: " + treat
             print "Working on trait: " + trait
             print "This is phe_r column number: " + str(phe_r_col_number)
-            qtlcommand_raw_phenotype = "Rscript do.qtl.comp_known_markers.R " + str(phe_r_col_number) + " " + treat + " " + trait + " " + outfile
+            qtlcommand_raw_phenotype = "Rscript do.qtl.comp_known_markers.R " + str(phe_r_col_number) + " " + treat + " " + trait + " " + outfile + " " +  trait_model + " " + qtl_method
             print qtlcommand_raw_phenotype
             subprocess.call(qtlcommand_raw_phenotype, shell=True)
             #phe_r_col_number += 1
@@ -196,13 +200,14 @@ if re.match('y', server):
             phe_d_col_number = x + 2
             #for d in phe_d:
             #    print d
-            (trait, treat1, treat2) = re.split('\.', str(phe_d[x]))
+            (trait, type, treat1, treat2) = re.split('\.', str(phe_d[x]))
             print trait
+            print type
             treat_diff = treat1 + "." + treat2
             print treat_diff
             print "Working on trait: " + phe_d[x] + " name of physical trait is " + trait
             print "This is phe_d column number: " + str(phe_d_col_number)
-            qtlcommand_diff_phenotype = "Rscript do.qtl_known_markers.R " + str(phe_d_col_number) + " " + outfile + " " + trait + " " + " cross.object.diff.Rdata"
+            qtlcommand_diff_phenotype = "Rscript do.qtl_known_markers.R " + str(phe_d_col_number) + " " + outfile + " " + trait + " " + " cross.object.diff.Rdata" + " " +  trait_model + " " + qtl_method
             print qtlcommand_diff_phenotype
             #phe_d_col_number += 1
             subprocess.call(qtlcommand_diff_phenotype, shell=True)
@@ -225,7 +230,7 @@ if re.match('y', server):
             print "Working on trait: " + trait
             print "This is phe_r column number: " + str(phe_r_col_number)
             # Build a text command to invoke in the shell
-            qtlcommand_raw_phenotype = "Rscript do.qtl_known_markers.R " + str(phe_r_col_number) + " " + outfile + " " + trait + " cross.object.raw.Rdata"
+            qtlcommand_raw_phenotype = "Rscript do.qtl_known_markers.R " + str(phe_r_col_number) + " " + outfile + " " + trait + " cross.object.raw.Rdata" + " " +  trait_model + " " + qtl_method
             print qtlcommand_raw_phenotype
             subprocess.call(qtlcommand_raw_phenotype, shell=True)
         # Call analysis of each trait in parallel    
@@ -246,7 +251,7 @@ else:
             print "Trait is: " + trait
             print "This is phe_r column number: " + str(phe_r_col_number)
             # Build command
-            qtlcommand_raw_phenotype = "Rscript do.qtl.comp_known_markers.R " + str(phe_r_col_number) + " " + treat + " " + trait + " " + outfile
+            qtlcommand_raw_phenotype = "Rscript do.qtl.comp_known_markers.R " + str(phe_r_col_number) + " " + treat + " " + trait + " " + outfile + " " +  trait_model + " " + qtl_method
             print qtlcommand_raw_phenotype
             subprocess.call(qtlcommand_raw_phenotype, shell=True)
             phe_r_col_number += 1
@@ -260,7 +265,7 @@ else:
             print "Treatment comparison is: " + treat_diff
             print "Working on trait: " + d + " name of physical trait is " + trait
             print "This is phe_d column number: " + str(phe_d_col_number)
-            qtlcommand_diff_phenotype = "Rscript do.qtl_known_markers.R " + str(phe_d_col_number) + " " + outfile + " " + trait + " " + " cross.object.diff.Rdata"
+            qtlcommand_diff_phenotype = "Rscript do.qtl_known_markers.R " + str(phe_d_col_number) + " " + outfile + " " + trait + " " + " cross.object.diff.Rdata" + " " +  trait_model + " " + qtl_method
             print qtlcommand_diff_phenotype
             subprocess.call(qtlcommand_diff_phenotype, shell=True)
             phe_d_col_number += 1
@@ -270,7 +275,7 @@ else:
         for p in phe_r:
             print "Working on trait: " + p
             print "This is phe_r column number: " +str(phe_r_col_number)
-            qtlcommand_raw_phenotype = "Rscript do.qtl_known_markers.R " + str(phe_r_col_number) + " " + outfile + " " + p + " " + " cross.object.diff.Rdata"
+            qtlcommand_raw_phenotype = "Rscript do.qtl_known_markers.R " + str(phe_r_col_number) + " " + outfile + " " + p + " " + " cross.object.diff.Rdata" + " " +  trait_model + " " + qtl_method
             print qtlcommand_raw_phenotype
             subprocess.call(qtlcommand_raw_phenotype, shell=True)
             phe_r_col_number += 1
@@ -306,7 +311,10 @@ if re.match('y', server):
     
     if re.match('y', comparison):
         def parallel_get_gene_comp(x):
-            (treat, trait) = re.split('\.', str(phe_r[x]))
+            print("You are at point 1")
+            print(x)
+            print(phe_r[x])
+            (treat, trait) = re.split('\.', phe_r[x])
             print "Getting genes from treatment: " + treat
             print "Getting genes from trait: " + trait
             # Get genes from  output
@@ -320,7 +328,9 @@ if re.match('y', server):
             print qtlcommand_get_gene_comp
             subprocess.call(qtlcommand_get_gene_comp, shell=True)
 
-        # Call analysis of each trait in parallel    
+        # Call analysis of each trait in parallel
+        print(nphe_r)
+        print(int(nphe_r))
         processes_comp = [mp.Process(target=parallel_get_gene_comp, args=(x,)) for x in range(0,int(nphe_r)-1,1)]
         # Begin looping through processes
         for p in processes_comp:
@@ -331,7 +341,10 @@ if re.match('y', server):
         
         
         def parallel_get_gene_diff(x):
-            (treat, trait) = re.split('\.', str(phe_r[x]))
+            print("You are at point 2")
+            print(x)
+            print(str(phe_d[x]))
+            (trait, type, treat1, treat2) = re.split('\.', str(phe_d[x]))
             diff_trait = str(phe_d[x])
             print "Getting genes from trait: " + trait
             print "Getting genes from difference trait: " + diff_trait
@@ -347,12 +360,12 @@ if re.match('y', server):
             subprocess.call(qtlcommand_get_gene_diff, shell=True)
 
         # Call analysis of each trait in parallel    
-        processes_comp = [mp.Process(target=parallel_get_gene_comp, args=(x,)) for x in range(0,int(nphe_d)-1,1)]
+        processes_comp_d = [mp.Process(target=parallel_get_gene_diff, args=(x,)) for x in range(0,int(nphe_d)-1,1)]
         # Begin looping through processes
-        for p in processes_comp:
+        for p in processes_comp_d:
             p.start()
             
-        for p in processes_comp:
+        for p in processes_comp_d:
             p.join()    
     else:
         def parallel_get_gene(x):

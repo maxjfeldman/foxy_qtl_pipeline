@@ -100,10 +100,10 @@ if (file.exists(mqm.qtl)) {
     
   }
 
-  annotation.file<-paste(path.mqm, "/genes_in_qtl_CI_", treat, ".", trait, ".csv", sep="")
+  annotation.file<-paste(path.mqm, "/genes_in_qtl_CI_", treat, ".", trait, ".txt", sep="")
   write.table(annotation.out, file=annotation.file, quote=F, row.names=F,sep = "\t")
 
 } else {
-  annotation.file<-paste(path.mqm, "/genes_in_qtl_CI_", treat, ".", trait, ".csv", sep="")
+  annotation.file<-paste(path.mqm, "/genes_in_qtl_CI_", treat, ".", trait, ".txt", sep="")
   write("No significant QTL in MQM", file=annotation.file)
 }

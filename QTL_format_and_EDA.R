@@ -488,10 +488,22 @@ if (length(treatments) > 1) {
       tp1<-t1[,c(1, grep(traits[k], colnames(t1)))]
       tp2<-t2[,c(1, grep(traits[k], colnames(t2)))]
       tp<-merge(tp1, tp2, by = "id")
+      # Calculate the absolute difference
       tp$diff<-tp[,2]-tp[,3]
-      colnames(tp)[4]<-traits[k]
-      diff<-cbind(diff, tp[,traits[k]])
-      colnames(diff)[k+1]<-paste(traits[k], paste(treatments[j], treatments[j+1], sep="-"), sep=".")
+      # Calculate the relative difference as defined by wikipedia
+      tp$rel_diff<-abs(tp[,2] - tp[,3])/(max(abs(tp[,2]), abs(tp[,3]), na.rm=TRUE))
+      # Calculate the ratio between the two, first make sure the second trait != 0
+      col3<-colnames(tp)[3]
+      # Cannot divide by zero so set any values equal to zero to some value close to zero
+      tp[col3 == 0, 3] <-c(0.001)
+      tp$ratio <- abs(tp[,2]/tp[,3])
+      colnames(tp)[4]<-paste(traits[k], 'diff', sep="=")
+      colnames(tp)[4]<-paste(colnames(tp)[4], paste(treatments[j], treatments[j+1], sep="-"), sep=".")
+      colnames(tp)[5]<-paste(traits[k], 'rel_diff', sep="=")
+      colnames(tp)[5]<-paste(colnames(tp)[5], paste(treatments[j], treatments[j+1], sep="-"), sep=".")
+      colnames(tp)[6]<-paste(traits[k], 'ratio', sep="=")
+      colnames(tp)[6]<-paste(colnames(tp)[6], paste(treatments[j], treatments[j+1], sep="-"), sep=".")
+      diff<-cbind(diff, tp[,4:6])
     }
   }
 

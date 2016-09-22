@@ -18,9 +18,9 @@ st.path<-paste(dir.job, st.name, sep="/")
 st<-read.csv(st.path, header=F)
 colnames(st)<-c('marker','chr','pos','lod','prop.var','additive.fx','additive.fx_se','L.CI_marker','L.CI_chr','L.CI_pos','L.CI_lod','R.CI_marker','R.CI_chr','R.CI_pos','R.CI_lod','trait','treatment','exp','year','type')
 
+# Need to add grepl statement here
 if(comp == 'y'){
-  st.diff<-st[st$type == 'comp',]
-
+    st.diff<-subset(st, grepl("comp", type))
 }
 st<-st[st$type == 'raw',]
 
@@ -108,7 +108,7 @@ if (nrow(st.diff) > 0) {
   st.diff$plot.char<-as.factor(st.diff$plot.char)
 
   pdf(paste(job, 'diff_badass_banner.pdf', sep="_"))
-  p<-ggplot() + geom_point(data = st.diff, aes(x = pos, y = prop.var, shape=plot.char),size=3, alpha=0.5) + geom_blank(data = blank_data, aes(x = x, y = y)) + facet_wrap(~chr, scales = "free_x") + expand_limits(x = 0) + scale_x_continuous(expand = c(0, 0)) + theme_bw() +   scale_shape_manual(name=c("B100 allelic effect"), values=c(24,25), labels=c("Up", "Down")) + scale_fill_manual(values=c('black'))
+  p<-ggplot() + geom_point(data = st.diff, aes(x = pos, y = prop.var, colour = type, shape=plot.char),size=3, alpha=0.5) + geom_blank(data = blank_data, aes(x = x, y = y)) + facet_wrap(~chr, scales = "free_x") + expand_limits(x = 0) + scale_x_continuous(expand = c(0, 0)) + theme_bw() +   scale_shape_manual(name=c("B100 allelic effect"), values=c(24,25), labels=c("Up", "Down")) + scale_color_manual(values = c("comp_diff" = "red", "comp_rel_diff" = "blue", "comp_ratio" = "green"))
   print(p + geom_errorbarh(data = st.diff, aes(y=prop.var, xmax = R.CI_pos, xmin = L.CI_pos, height=5, x=pos)) + ylab("% Variance")  + xlab("Genome Position"))
   dev.off()
   }

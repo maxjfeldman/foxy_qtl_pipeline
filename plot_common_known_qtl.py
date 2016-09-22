@@ -42,15 +42,15 @@ if re.match('y', comparison):
     nphe_d = phe_d.pop(0)
     print str(phe_d) + "\n"
 
-final_result = np.empty((0,13), str)
+final_result = np.empty((0,20), str)
 
 if re.match('y', comparison):
   for p in phe_r:
     print p
     (treat, trait) = re.split('\.', str(p))
-    name_of_summary_table = "summary.table.known_qtl." + treat + "." + trait + ".csv"
+    name_of_summary_table = "summary.table.mqm." + treat + "." + trait + ".csv"
     print(name_of_summary_table)
-    path_to_summary_table =  trait + "/" + treat + "/" + "known_markers.out" + "/" + name_of_summary_table
+    path_to_summary_table =  trait + "/" + treat + "/" + "mqm.out" + "/" + name_of_summary_table
     print(path_to_summary_table)
     if os.path.exists(path_to_summary_table):
         print "Yes"
@@ -110,9 +110,9 @@ if re.match('y', comparison):
         print "No"
   for p in phe_d:
     print(p)
-    (trait, treat1, treat2) = re.split('\.', str(p))
-    name_of_summary_table = "summary.table.known_qtl." + p + ".csv"
-    path_to_summary_table = directory + "/" + base_dir + "/" + trait + "/comparison/known_qtl.out/" + name_of_summary_table
+    (trait, type, treat1, treat2) = re.split('\.', str(p))
+    name_of_summary_table = "summary.table.mqm." + p + ".csv"
+    path_to_summary_table = directory + "/" + base_dir + "/" + trait + "/comparison/mqm.out/" + name_of_summary_table
     
     # Get comparison traits
     pwd = os.getcwd()
@@ -134,7 +134,8 @@ if re.match('y', comparison):
         t2 = ["diff"] * rownum
         t3 = [exp] * rownum
         t4 = [yr] * rownum
-        t5 = ["comp"] * rownum
+        comp_type = str('comp') + '_' + type
+        t5 = [comp_type] * rownum
         t1[0] = "trait"
         t2[0] = "treatment"
         t3[0] = "exp"
@@ -142,12 +143,12 @@ if re.match('y', comparison):
         t5[0] = "type"
         
         print(t1)
-        print(type(t1))
+        #print(type(t1))
         #print(np.shape(np.asarray(t1)))
         
         t1 = np.asarray(t1)
         t1 = np.transpose(t1)
-        print(type(t1))
+        #print(type(t1))
         print(np.shape(t1))
         print(t1)
         
@@ -167,7 +168,7 @@ if re.match('y', comparison):
 
         
         print(np.shape(result))
-        print(type(result))
+        #print(type(result))
         #print(result)
         final_result = np.vstack((final_result, result))
         print(np.shape(final_result))
@@ -178,8 +179,8 @@ if re.match('y', comparison):
 if re.match('n', comparison):
     for p in phe_r:
       print(p)
-    name_of_summary_table = "summary.table.known_qtl." + p + ".csv"
-    path_to_summary_table =  trait + "/" + "comparison" + "/" + "known_qtl.out" + "/" + name_of_summary_table
+    name_of_summary_table = "summary.table.mqm." + p + ".csv"
+    path_to_summary_table =  trait + "/" + "comparison" + "/" + "mqm.out" + "/" + name_of_summary_table
     print(name_of_summary_table)
     if os.path.exists(path_to_summary_table):
         print "Yes"
@@ -229,7 +230,7 @@ if re.match('n', comparison):
 
         
         print(np.shape(result))
-        print(type(result))
+        #print(type(result))
         #print(result)
         final_result = np.vstack((final_result, result))
         print(np.shape(final_result))

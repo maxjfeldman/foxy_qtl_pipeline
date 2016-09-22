@@ -108,9 +108,9 @@ if re.match('y', comparison):
         print "No"
   for p in phe_d:
     print(p)
-    (trait, treat1, treat2) = re.split('\.', str(p))
+    (trait, type, treat1, treat2) = re.split('\.', str(p))
     name_of_summary_table = "summary.table.mqm." + p + ".csv" 
-    path_to_summary_table =  directory + "/" + trait + "/comparison/mqm.out/" + name_of_summary_table
+    path_to_summary_table =  directory + "/" + base_dir + "/" + trait + "/comparison/mqm.out/" + name_of_summary_table
     
     # Get comparison traits
     pwd = os.getcwd()
@@ -132,7 +132,8 @@ if re.match('y', comparison):
         t2 = ["diff"] * rownum
         t3 = [exp] * rownum
         t4 = [yr] * rownum
-        t5 = ["comp"] * rownum
+        comp_type = str('comp') + '_' + type
+        t5 = [comp_type] * rownum
         t1[0] = "trait"
         t2[0] = "treatment"
         t3[0] = "exp"
@@ -140,12 +141,12 @@ if re.match('y', comparison):
         t5[0] = "type"
         
         print(t1)
-        print(type(t1))
+        #print(type(t1))
         #print(np.shape(np.asarray(t1)))
         
         t1 = np.asarray(t1)
         t1 = np.transpose(t1)
-        print(type(t1))
+        #print(type(t1))
         print(np.shape(t1))
         print(t1)
         
@@ -165,7 +166,7 @@ if re.match('y', comparison):
 
         
         print(np.shape(result))
-        print(type(result))
+        #print(type(result))
         #print(result)
         final_result = np.vstack((final_result, result))
         print(np.shape(final_result))
