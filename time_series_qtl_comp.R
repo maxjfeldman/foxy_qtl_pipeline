@@ -139,29 +139,12 @@ par(mfrow=c(1,1))
 
 # MQM
 # First SLOD
-out.mqm.F<-stepwiseqtlF(fg.cr.obj, pheno.cols = get(paste(t1, 'cols', sep=".")), max.qtl=3, usec= "slod", method="hk", penalties=c(max.perm.F[1],0,0))
+out.mqm.F<-stepwiseqtlF(fg.cr.obj, pheno.cols = get(paste(t1, 'cols', sep=".")), max.qtl=9, usec= "slod", method="hk", penalties=c(max.perm.F[1],0,0))
 
 if(out.mqm.F$n.qtl > 1 ) {
 
 chr<-out.mqm.F$chr
 pos<-out.mqm.F$pos
-
-# This is on the chopping block
-
-if (length(chr) == 1) {
-  temp<-summary(out.F)
-  temp<-temp[temp$chr != chr,]
-  temp<-temp[order(temp$slod, decreasing=T),]
-  chr<-c(chr, temp[1,'chr'])
-  pos<-c(pos, temp[1,'pos'])
-}
-
-if (length(chr) == 0) {
-  temp<-summary(out.F)
-  temp<-temp[order(temp$slod, decreasing=T),]
-  chr<-temp[1:2, 'chr']
-  pos<-temp[1:2, 'pos']
-}
 
 qtl<-makeqtl(fg.cr.obj, chr, pos, what=c("prob"))
 Qs<-paste('Q', 1:length(pos), sep="")
@@ -190,11 +173,11 @@ slodeff <- vector("list", length(get(paste(t1, 'cols', sep="."))))
 
 # Make a multiplicaiton vector
 m.vect<-c(1, rep(2, length(slodeff)))
-
+# Need to multiply by m.vect to get effect size for plot
 for(i in 1:length(slodeff)) {
   slodeff[[i]] <- summary(fitqtl(fg.cr.obj, phe=i+(min(get(paste(t1, 'cols', sep=".")))-1), qtl=qtl,
                                  method="hk", get.ests=TRUE,
-                                 dropone=FALSE))$ests[,1]*m.vect
+                                 dropone=FALSE))$ests[,1]
 }
 
 
@@ -204,6 +187,7 @@ days<-c()
 for(p in 1:length(pname_list)) {
   days<-c(days,pname_list[[p]][length(pname_list[[1]])-1])
 }
+save.image("intermediate_fail_point.Rdata")
 
 nam <- names(slodeff[[1]])
 slodeff <- matrix(unlist(slodeff), byrow=TRUE, ncol=length(nam))
@@ -294,12 +278,12 @@ for(i in get(paste(t1, 'cols', sep="."))) {
   marker.prop.var.slod<-as.data.frame(dropone.mdl.var.slod[1:(nrow(dropone.mdl.var.slod)-2),2])
   
   # Build a table that summarizes the results
-  lods<-out.fitqtl.slod$result.drop[,4]
+  lods<-out.fitqtl.slod$result.drop[,3]
   slod.markers<-cbind(chr, pos, lods)
   phe.name<-colnames(fg.cr.obj$pheno)[i]
-  summary.table<-cbind(slod.markers, marker.prop.var.slod, fx_size.a, fx_size.se, CI, phe.name)
-  rownames(summary.table)<-m.names
-  colnames(summary.table)<-c('chr', 'pos', 'lod', 'prop.var', 'additive.fx', 'additive.fx_se', colnames(CI), 'trait')
+  summary.table<-cbind(m.names, slod.markers, marker.prop.var.slod, fx_size.a, fx_size.se, CI, phe.name)
+  #rownames(summary.table)<-m.names
+  colnames(summary.table)<-c('marker', 'chr', 'pos', 'lod', 'prop.var', 'additive.fx', 'additive.fx_se', colnames(CI), 'trait')
   summary.table.slod<-rbind(summary.table.slod, summary.table)
 }
 
@@ -318,21 +302,6 @@ if(out.mqm.F$n.qtl == 1){
   
   chr<-out.mqm.F$chr
   pos<-out.mqm.F$pos
-  
-  if (length(chr) == 1) {
-    temp<-summary(out.F)
-    temp<-temp[temp$chr != chr,]
-    temp<-temp[order(temp$slod, decreasing=T),]
-    chr<-c(chr, temp[1,'chr'])
-    pos<-c(pos, temp[1,'pos'])
-  }
-  
-  if (length(chr) == 0) {
-    temp<-summary(out.F)
-    temp<-temp[order(temp$slod, decreasing=T),]
-    chr<-temp[1:2, 'chr']
-    pos<-temp[1:2, 'pos']
-  }
   
   qtl<-makeqtl(fg.cr.obj, chr, pos, what=c("prob"))
   Qs<-paste('Q', 1:length(pos), sep="")
@@ -364,7 +333,7 @@ if(out.mqm.F$n.qtl == 1){
   for(i in 1:length(slodeff)) {
     slodeff[[i]] <- summary(fitqtl(fg.cr.obj, phe=i+(min(get(paste(t1, 'cols', sep=".")))-1), qtl=qtl,
                                    method="hk", get.ests=TRUE,
-                                   dropone=FALSE))$ests[,1]*m.vect
+                                   dropone=FALSE))$ests[,1]
   }
   
   pname_list<-strsplit(phenames(fg.cr.obj)[get(paste(t1, 'cols', sep="."))], '_')
@@ -446,10 +415,10 @@ if(out.mqm.F$n.qtl == 1){
     lods<-out.fitqtl.slod$lod
     slod.markers<-cbind(chr, pos, lods)
     phe.name<-colnames(fg.cr.obj$pheno)[i]
-    summary.table<-c(slod.markers, marker.prop.var.slod, as.numeric(fx_size.a), fx_size.se, CI, phe.name)
+    summary.table<-c(m.names, slod.markers, marker.prop.var.slod, as.numeric(fx_size.a), fx_size.se, CI, phe.name)
     summary.table<-data.frame(matrix(unlist(summary.table), nrow=1, byrow=T),stringsAsFactors=FALSE)
-    rownames(summary.table)<-m.names
-    colnames(summary.table)<-c('chr', 'pos', 'lod', 'prop.var', 'additive.fx', 'additive.fx_se', colnames(CI), 'trait')
+    #rownames(summary.table)<-m.names
+    colnames(summary.table)<-c('marker', 'chr', 'pos', 'lod', 'prop.var', 'additive.fx', 'additive.fx_se', colnames(CI), 'trait')
     summary.table.slod<-rbind(summary.table.slod, summary.table)
   }
   
@@ -471,28 +440,14 @@ save.image(file=paste('timeseries_', t1, '_cross.object.raw.Rdata', sep=""))
 
 # MQM
 # Now MLOD
-out.mqm.F<-stepwiseqtlF(fg.cr.obj, pheno.cols = get(paste(t1, 'cols', sep=".")), max.qtl=3, usec= "mlod", method="hk", penalties=c(max.perm.F[2],0,0))
+out.mqm.F<-stepwiseqtlF(fg.cr.obj, pheno.cols = get(paste(t1, 'cols', sep=".")), max.qtl=9, usec= "mlod", method="hk", penalties=c(max.perm.F[2],0,0))
 
 if(out.mqm.F$n.qtl > 1) {
  
 chr<-out.mqm.F$chr
 pos<-out.mqm.F$pos
 
-if (length(chr) == 1) {
-  temp<-summary(out.F)
-  temp<-temp[temp$chr != chr,]
-  temp<-temp[order(temp$mlod, decreasing=T),]
-  chr<-c(chr, temp[1,'chr'])
-  pos<-c(pos, temp[1,'pos'])
-}
-
-if (length(chr) == 0) {
-  temp<-summary(out.F)
-  temp<-temp[order(temp$mlod, decreasing=T),]
-  chr<-temp[1:2, 'chr']
-  pos<-temp[1:2, 'pos']
-}
-
+save.image("checkpoint3.Rdata")
 qtl<-makeqtl(fg.cr.obj, chr, pos, what=c("prob"))
 Qs<-paste('Q', 1:length(pos), sep="")
 my.formula<-as.formula(paste("y~", paste(Qs, collapse="+")))
@@ -526,7 +481,7 @@ m.vect<-c(1, rep(2, length(mlodeff)))
 for(i in 1:length(mlodeff)) {
   mlodeff[[i]] <- summary(fitqtl(fg.cr.obj, phe=i+(min(get(paste(t1, 'cols', sep=".")))-1), qtl=qtl,
                                  method="hk", get.ests=TRUE,
-                                 dropone=FALSE))$ests[,1]*m.vect
+                                 dropone=FALSE))$ests[,1]
 }
 
 pname_list<-strsplit(phenames(fg.cr.obj)[get(paste(t1, 'cols', sep="."))], '_')
@@ -626,12 +581,12 @@ for(i in get(paste(t1, 'cols', sep="."))) {
   marker.prop.var.mlod<-as.data.frame(dropone.mdl.var.mlod[1:(nrow(dropone.mdl.var.mlod)-2),2])
   
   # Build a table that summarizes the results
-  lods<-out.fitqtl.mlod$result.drop[,4]
+  lods<-out.fitqtl.mlod$result.drop[,3]
   mlod.markers<-cbind(chr, pos, lods)
   phe.name<-colnames(fg.cr.obj$pheno)[i]
-  summary.table<-cbind(mlod.markers, marker.prop.var.mlod, fx_size.a, fx_size.se, CI, phe.name)
-  rownames(summary.table)<-m.names
-  colnames(summary.table)<-c('chr', 'pos', 'lod', 'prop.var', 'additive.fx', 'additive.fx_se', colnames(CI), 'trait')
+  summary.table<-cbind(m.names, mlod.markers, marker.prop.var.mlod, fx_size.a, fx_size.se, CI, phe.name)
+  #rownames(summary.table)<-m.names
+  colnames(summary.table)<-c('marker', 'chr', 'pos', 'lod', 'prop.var', 'additive.fx', 'additive.fx_se', colnames(CI), 'trait')
   summary.table.mlod<-rbind(summary.table.mlod, summary.table)
 }
 
@@ -648,21 +603,6 @@ if(out.mqm.F$n.qtl == 1){
   
   chr<-out.mqm.F$chr
   pos<-out.mqm.F$pos
-  
-  if (length(chr) == 1) {
-    temp<-summary(out.F)
-    temp<-temp[temp$chr != chr,]
-    temp<-temp[order(temp$mlod, decreasing=T),]
-    chr<-c(chr, temp[1,'chr'])
-    pos<-c(pos, temp[1,'pos'])
-  }
-  
-  if (length(chr) == 0) {
-    temp<-summary(out.F)
-    temp<-temp[order(temp$mlod, decreasing=T),]
-    chr<-temp[1:2, 'chr']
-    pos<-temp[1:2, 'pos']
-  }
   
   qtl<-makeqtl(fg.cr.obj, chr, pos, what=c("prob"))
   Qs<-paste('Q', 1:length(pos), sep="")
@@ -693,7 +633,7 @@ if(out.mqm.F$n.qtl == 1){
   for(i in 1:length(mlodeff)) {
     mlodeff[[i]] <- summary(fitqtl(fg.cr.obj, phe=i+(min(get(paste(t1, 'cols', sep=".")))-1), qtl=qtl,
                                    method="hk", get.ests=TRUE,
-                                   dropone=FALSE))$ests[,1]*m.vect
+                                   dropone=FALSE))$ests[,1]
   }
   
   pname_list<-strsplit(phenames(fg.cr.obj)[get(paste(t1, 'cols', sep="."))], '_')
@@ -775,10 +715,10 @@ if(out.mqm.F$n.qtl == 1){
     lods<-out.fitqtl.mlod$lod
     mlod.markers<-cbind(chr, pos, lods)
     phe.name<-colnames(fg.cr.obj$pheno)[i]
-    summary.table<-c(mlod.markers, marker.prop.var.mlod, as.numeric(fx_size.a), fx_size.se, CI, phe.name)
+    summary.table<-c(m.names, mlod.markers, marker.prop.var.mlod, as.numeric(fx_size.a), fx_size.se, CI, phe.name)
     summary.table<-data.frame(matrix(unlist(summary.table), nrow=1, byrow=T),stringsAsFactors=FALSE)
-    rownames(summary.table)<-m.names
-    colnames(summary.table)<-c('chr', 'pos', 'lod', 'prop.var', 'additive.fx', 'additive.fx_se', colnames(CI), 'trait')
+    #rownames(summary.table)<-m.names
+    colnames(summary.table)<-c('marker', 'chr', 'pos', 'lod', 'prop.var', 'additive.fx', 'additive.fx_se', colnames(CI), 'trait')
     summary.table.mlod<-rbind(summary.table.mlod, summary.table)
   }
   
@@ -832,7 +772,7 @@ m.vect<-c(1, rep(2, length(klodeff)))
 for(i in 1:length(klodeff)) {
   klodeff[[i]] <- summary(fitqtl(fg.cr.obj, phe=i+(min(get(paste(t1, 'cols', sep=".")))-1), qtl=qtl,
                                  method="hk", get.ests=TRUE,
-                                 dropone=FALSE))$ests[,1]*m.vect
+                                 dropone=FALSE))$ests[,1]
 }
 
 pname_list<-strsplit(phenames(fg.cr.obj)[get(paste(t1, 'cols', sep="."))], '_')
@@ -934,12 +874,12 @@ for(i in get(paste(t1, 'cols', sep="."))) {
   marker.prop.var.klod<-as.data.frame(dropone.mdl.var.klod[1:(nrow(dropone.mdl.var.klod)-2),2])
   
   # Build a table that summarizes the results
-  lods<-out.fitqtl.klod$result.drop[,4]
+  lods<-out.fitqtl.klod$result.drop[,3]
   klod.markers<-cbind(chr, pos, lods)
   phe.name<-colnames(fg.cr.obj$pheno)[i]
-  summary.table<-cbind(klod.markers, marker.prop.var.klod, fx_size.a, fx_size.se, CI, phe.name)
-  rownames(summary.table)<-m.names
-  colnames(summary.table)<-c('chr', 'pos', 'lod', 'prop.var', 'additive.fx', 'additive.fx_se', colnames(CI), 'trait')
+  summary.table<-cbind(m.names, klod.markers, marker.prop.var.klod, fx_size.a, fx_size.se, CI, phe.name)
+  #rownames(summary.table)<-m.names
+  colnames(summary.table)<-c('marker', 'chr', 'pos', 'lod', 'prop.var', 'additive.fx', 'additive.fx_se', colnames(CI), 'trait')
   summary.table.klod<-rbind(summary.table.klod, summary.table)
 }
 
@@ -988,26 +928,12 @@ par(mfrow=c(1,1))
 
 # MQM
 # First SLOD
-out.mqm.F<-stepwiseqtlF(fg.cr.obj, pheno.cols = get(paste(t2, 'cols', sep=".")), max.qtl=3, usec= "slod", method="hk", penalties=c(max.perm.F[1],0,0))
+out.mqm.F<-stepwiseqtlF(fg.cr.obj, pheno.cols = get(paste(t2, 'cols', sep=".")), max.qtl=9, usec= "slod", method="hk", penalties=c(max.perm.F[1],0,0))
 
 if(out.mqm.F$n.qtl > 1) {
 chr<-out.mqm.F$chr
 pos<-out.mqm.F$pos
 
-if (length(chr) == 1) {
-  temp<-summary(out.F)
-  temp<-temp[temp$chr != chr,]
-  temp<-temp[order(temp$slod, decreasing=T),]
-  chr<-c(chr, temp[1,'chr'])
-  pos<-c(pos, temp[1,'pos'])
-}
-
-if (length(chr) == 0) {
-  temp<-summary(out.F)
-  temp<-temp[order(temp$slod, decreasing=T),]
-  chr<-temp[1:2, 'chr']
-  pos<-temp[1:2, 'pos']
-}
 
 qtl<-makeqtl(fg.cr.obj, chr, pos, what=c("prob"))
 Qs<-paste('Q', 1:length(pos), sep="")
@@ -1039,7 +965,7 @@ m.vect<-c(1, rep(2, length(slodeff)))
 for(i in 1:length(slodeff)) {
   slodeff[[i]] <- summary(fitqtl(fg.cr.obj, phe=i+(min(get(paste(t2, 'cols', sep=".")))-1), qtl=qtl,
                                  method="hk", get.ests=TRUE,
-                                 dropone=FALSE))$ests[,1]*m.vect
+                                 dropone=FALSE))$ests[,1]
 }
 
 pname_list<-strsplit(phenames(fg.cr.obj)[get(paste(t2, 'cols', sep="."))], '_')
@@ -1138,12 +1064,12 @@ for(i in get(paste(t2, 'cols', sep="."))) {
   marker.prop.var.slod<-as.data.frame(dropone.mdl.var.slod[1:(nrow(dropone.mdl.var.slod)-2),2])
   
   # Build a table that summarizes the results
-  lods<-out.fitqtl.slod$result.drop[,4]
+  lods<-out.fitqtl.slod$result.drop[,3]
   slod.markers<-cbind(chr, pos, lods)
   phe.name<-colnames(fg.cr.obj$pheno)[i]
-  summary.table<-cbind(slod.markers, marker.prop.var.slod, fx_size.a, fx_size.se, CI, phe.name)
-  rownames(summary.table)<-m.names
-  colnames(summary.table)<-c('chr', 'pos', 'lod', 'prop.var', 'additive.fx', 'additive.fx_se', colnames(CI), 'trait')
+  summary.table<-cbind(m.names, slod.markers, marker.prop.var.slod, fx_size.a, fx_size.se, CI, phe.name)
+  #rownames(summary.table)<-m.names
+  colnames(summary.table)<-c('marker', 'chr', 'pos', 'lod', 'prop.var', 'additive.fx', 'additive.fx_se', colnames(CI), 'trait')
   summary.table.slod<-rbind(summary.table.slod, summary.table)
 }
 
@@ -1159,21 +1085,6 @@ if(out.mqm.F$n.qtl == 1){
   
   chr<-out.mqm.F$chr
   pos<-out.mqm.F$pos
-  
-  if (length(chr) == 1) {
-    temp<-summary(out.F)
-    temp<-temp[temp$chr != chr,]
-    temp<-temp[order(temp$slod, decreasing=T),]
-    chr<-c(chr, temp[1,'chr'])
-    pos<-c(pos, temp[1,'pos'])
-  }
-  
-  if (length(chr) == 0) {
-    temp<-summary(out.F)
-    temp<-temp[order(temp$slod, decreasing=T),]
-    chr<-temp[1:2, 'chr']
-    pos<-temp[1:2, 'pos']
-  }
   
   qtl<-makeqtl(fg.cr.obj, chr, pos, what=c("prob"))
   Qs<-paste('Q', 1:length(pos), sep="")
@@ -1204,7 +1115,7 @@ if(out.mqm.F$n.qtl == 1){
   for(i in 1:length(slodeff)) {
     slodeff[[i]] <- summary(fitqtl(fg.cr.obj, phe=i+(min(get(paste(t2, 'cols', sep=".")))-1), qtl=qtl,
                                    method="hk", get.ests=TRUE,
-                                   dropone=FALSE))$ests[,1]*m.vect
+                                   dropone=FALSE))$ests[,1]
   }
   
   pname_list<-strsplit(phenames(fg.cr.obj)[get(paste(t2, 'cols', sep="."))], '_')
@@ -1286,10 +1197,10 @@ if(out.mqm.F$n.qtl == 1){
     lods<-out.fitqtl.slod$lod
     slod.markers<-cbind(chr, pos, lods)
     phe.name<-colnames(fg.cr.obj$pheno)[i]
-    summary.table<-c(slod.markers, marker.prop.var.slod, as.numeric(fx_size.a), fx_size.se, CI, phe.name)
+    summary.table<-c(m.names, slod.markers, marker.prop.var.slod, as.numeric(fx_size.a), fx_size.se, CI, phe.name)
     summary.table<-data.frame(matrix(unlist(summary.table), nrow=1, byrow=T),stringsAsFactors=FALSE)
-    rownames(summary.table)<-m.names
-    colnames(summary.table)<-c('chr', 'pos', 'lod', 'prop.var', 'additive.fx', 'additive.fx_se', colnames(CI), 'trait')
+    #rownames(summary.table)<-m.names
+    colnames(summary.table)<-c('marker', 'chr', 'pos', 'lod', 'prop.var', 'additive.fx', 'additive.fx_se', colnames(CI), 'trait')
     summary.table.slod<-rbind(summary.table.slod, summary.table)
   }
   
@@ -1310,27 +1221,13 @@ save.image(file=paste('timeseries_', t2, '_cross.object.raw.Rdata', sep=""))
 
 # MQM
 # Now MLOD
-out.mqm.F<-stepwiseqtlF(fg.cr.obj, pheno.cols = get(paste(t2, 'cols', sep=".")), max.qtl=3, usec= "mlod", method="hk", penalties=c(max.perm.F[2],0,0))
+out.mqm.F<-stepwiseqtlF(fg.cr.obj, pheno.cols = get(paste(t2, 'cols', sep=".")), max.qtl=9, usec= "mlod", method="hk", penalties=c(max.perm.F[2],0,0))
+save.image("checkpoint1.Rdata")
 
 if(out.mqm.F$n.qtl > 1) {
 
 chr<-out.mqm.F$chr
 pos<-out.mqm.F$pos
-
-if (length(chr) == 1) {
-  temp<-summary(out.F)
-  temp<-temp[temp$chr != chr,]
-  temp<-temp[order(temp$mlod, decreasing=T),]
-  chr<-c(chr, temp[1,'chr'])
-  pos<-c(pos, temp[1,'pos'])
-}
-
-if (length(chr) == 0) {
-  temp<-summary(out.F)
-  temp<-temp[order(temp$mlod, decreasing=T),]
-  chr<-temp[1:2, 'chr']
-  pos<-temp[1:2, 'pos']
-}
 
 qtl<-makeqtl(fg.cr.obj, chr, pos, what=c("prob"))
 Qs<-paste('Q', 1:length(pos), sep="")
@@ -1361,7 +1258,7 @@ m.vect<-c(1, rep(2, length(mlodeff)))
 for(i in 1:length(mlodeff)) {
   mlodeff[[i]] <- summary(fitqtl(fg.cr.obj, phe=i+(min(get(paste(t2, 'cols', sep=".")))-1), qtl=qtl,
                                  method="hk", get.ests=TRUE,
-                                 dropone=FALSE))$ests[,1]*m.vect
+                                 dropone=FALSE))$ests[,1]
 }
 
 pname_list<-strsplit(phenames(fg.cr.obj)[get(paste(t2, 'cols', sep="."))], '_')
@@ -1458,12 +1355,12 @@ for(i in get(paste(t2, 'cols', sep="."))) {
   marker.prop.var.mlod<-as.data.frame(dropone.mdl.var.mlod[1:(nrow(dropone.mdl.var.mlod)-2),2])
   
   # Build a table that summarizes the results
-  lods<-out.fitqtl.mlod$result.drop[,4]
+  lods<-out.fitqtl.mlod$result.drop[,3]
   mlod.markers<-cbind(chr, pos, lods)
   phe.name<-colnames(fg.cr.obj$pheno)[i]
-  summary.table<-cbind(mlod.markers, marker.prop.var.mlod, fx_size.a, fx_size.se, CI, phe.name)
-  rownames(summary.table)<-m.names
-  colnames(summary.table)<-c('chr', 'pos', 'lod', 'prop.var', 'additive.fx', 'additive.fx_se', colnames(CI), 'trait')
+  summary.table<-cbind(m.names, mlod.markers, marker.prop.var.mlod, fx_size.a, fx_size.se, CI, phe.name)
+  #rownames(summary.table)<-m.names
+  colnames(summary.table)<-c('marker', 'chr', 'pos', 'lod', 'prop.var', 'additive.fx', 'additive.fx_se', colnames(CI), 'trait')
   summary.table.mlod<-rbind(summary.table.mlod, summary.table)
 }
 
@@ -1476,44 +1373,35 @@ write.csv(intercept.mlod, file=paste('intercept.mlod.', t2, "_", job, '.csv', se
 
 
 }
+save.image("checkpoint2.Rdata")
 
 if(out.mqm.F$n.qtl == 1){
   
   chr<-out.mqm.F$chr
   pos<-out.mqm.F$pos
-  
-  if (length(chr) == 1) {
-    temp<-summary(out.F)
-    temp<-temp[temp$chr != chr,]
-    temp<-temp[order(temp$mlod, decreasing=T),]
-    chr<-c(chr, temp[1,'chr'])
-    pos<-c(pos, temp[1,'pos'])
-  }
-  
-  if (length(chr) == 0) {
-    temp<-summary(out.F)
-    temp<-temp[order(temp$mlod, decreasing=T),]
-    chr<-temp[1:2, 'chr']
-    pos<-temp[1:2, 'pos']
-  }
-  
+  save.image("checkpoint3.Rdata")
+
   qtl<-makeqtl(fg.cr.obj, chr, pos, what=c("prob"))
   Qs<-paste('Q', 1:length(pos), sep="")
   my.formula<-as.formula(paste("y~", paste(Qs, collapse="+")))
   lodmat.F<-getprofile(fg.cr.obj, qtl =  qtl, pheno.cols = get(paste(t2, 'cols', sep=".")), formula = my.formula, method = "hk", verbose = F, tpy="comb")
-  
+  save.image("checkpoint6.Rdata")
+
   assign(paste('out.mqm.F', t2, 'mlod', sep="_"), out.mqm.F)
   assign(paste('chr', t2, 'mlod', sep="_"), chr)
   assign(paste('pos', t2, 'mlod', sep="_"), pos)
   assign(paste('qtl', t2, 'mlod', sep="_"), qtl)
   assign(paste('my.formula', t2, 'mlod', sep="_"), my.formula)
   assign(paste('lodmat.F', t2, 'mlod', sep="_"), lodmat.F)
-  
+  save.image("checkpoint7.Rdata")
+
   # Make plots of the QTL LOD profile and the LOD profile over time
   par(mfrow=c(2,1))
   pdf(paste('mqm_timeseries_qtl_', job, ".", t2, '_mlod.pdf', sep=""))
   plotprofile(lodmat.F, mval = 8, times=as.numeric(days), col=heat.colors(100)[100:1], main="MLOD")
   refqtlmlod <- refineqtlF(fg.cr.obj, pheno.cols = get(paste(t2, 'cols', sep=".")), usec = "mlod", qtl= qtl, method = "hk", keeplodprofile = T)
+  save.image("checkpoint8.Rdata")
+
   plotLodProfile(refqtlmlod)
   dev.off()
   par(mfrow=c(1,1))
@@ -1522,26 +1410,30 @@ if(out.mqm.F$n.qtl == 1){
   mlodeff <- vector("list", length(get(paste(t2, 'cols', sep="."))))
   # Make a multiplicaiton vector
   m.vect<-c(1, rep(2, length(mlodeff)))
-  
+  save.image("checkpoint9.Rdata")
+
   for(i in 1:length(mlodeff)) {
     mlodeff[[i]] <- summary(fitqtl(fg.cr.obj, phe=i+(min(get(paste(t2, 'cols', sep=".")))-1), qtl=qtl,
                                    method="hk", get.ests=TRUE,
-                                   dropone=FALSE))$ests[,1]*m.vect
+                                   dropone=FALSE))$ests[,1]
   }
   
   pname_list<-strsplit(phenames(fg.cr.obj)[get(paste(t2, 'cols', sep="."))], '_')
-  
+  save.image("checkpoint10.Rdata")
+
   days<-c()
   for(p in 1:length(pname_list)) {
     days<-c(days,pname_list[[p]][length(pname_list[[1]])-1])
   }
-  
+  save.image("checkpoint11.Rdata")
+
   nam <- names(mlodeff[[1]])
   mlodeff <- matrix(unlist(mlodeff), byrow=TRUE, ncol=length(nam))
   colnames(mlodeff) <- nam
   
   n.col<-ncol(mlodeff)
-  
+  save.image("checkpoint12.Rdata")
+
   # Lets plot the effect size over time
   par(mfrow=c(1,n.col))
   pdf(paste('mqm_timeseries_fx_size_mlod_', job, ".", t2, ".pdf", sep=""))
@@ -1608,10 +1500,10 @@ if(out.mqm.F$n.qtl == 1){
     lods<-out.fitqtl.mlod$lod
     mlod.markers<-cbind(chr, pos, lods)
     phe.name<-colnames(fg.cr.obj$pheno)[i]
-    summary.table<-c(mlod.markers, marker.prop.var.mlod, as.numeric(fx_size.a), fx_size.se, CI, phe.name)
+    summary.table<-c(m.names, mlod.markers, marker.prop.var.mlod, as.numeric(fx_size.a), fx_size.se, CI, phe.name)
     summary.table<-data.frame(matrix(unlist(summary.table), nrow=1, byrow=T),stringsAsFactors=FALSE)
-    rownames(summary.table)<-m.names
-    colnames(summary.table)<-c('chr', 'pos', 'lod', 'prop.var', 'additive.fx', 'additive.fx_se', colnames(CI), 'trait')
+    #rownames(summary.table)<-m.names
+    colnames(summary.table)<-c('marker', 'chr', 'pos', 'lod', 'prop.var', 'additive.fx', 'additive.fx_se', colnames(CI), 'trait')
     summary.table.mlod<-rbind(summary.table.mlod, summary.table)
   }
   
@@ -1667,7 +1559,7 @@ m.vect<-c(1, rep(2, length(klodeff)))
 for(i in 1:length(klodeff)) {
   klodeff[[i]] <- summary(fitqtl(fg.cr.obj, phe=i+(min(get(paste(t2, 'cols', sep=".")))-1), qtl=qtl,
                                  method="hk", get.ests=TRUE,
-                                 dropone=FALSE))$ests[,1]*m.vect
+                                 dropone=FALSE))$ests[,1]
 }
 
 pname_list<-strsplit(phenames(fg.cr.obj)[get(paste(t2, 'cols', sep="."))], '_')
@@ -1768,12 +1660,12 @@ for(i in get(paste(t2, 'cols', sep="."))) {
   marker.prop.var.klod<-as.data.frame(dropone.mdl.var.klod[1:(nrow(dropone.mdl.var.klod)-2),2])
   
   # Build a table that summarizes the results
-  lods<-out.fitqtl.klod$result.drop[,4]
+  lods<-out.fitqtl.klod$result.drop[,3]
   klod.markers<-cbind(chr, pos, lods)
   phe.name<-colnames(fg.cr.obj$pheno)[i]
-  summary.table<-cbind(klod.markers, marker.prop.var.klod, fx_size.a, fx_size.se, CI, phe.name)
-  rownames(summary.table)<-m.names
-  colnames(summary.table)<-c('chr', 'pos', 'lod', 'prop.var', 'additive.fx', 'additive.fx_se', colnames(CI), 'trait')
+  summary.table<-cbind(m.names, klod.markers, marker.prop.var.klod, fx_size.a, fx_size.se, CI, phe.name)
+  #rownames(summary.table)<-m.names
+  colnames(summary.table)<-c('marker', 'chr', 'pos', 'lod', 'prop.var', 'additive.fx', 'additive.fx_se', colnames(CI), 'trait')
   summary.table.klod<-rbind(summary.table.klod, summary.table)
 }
 

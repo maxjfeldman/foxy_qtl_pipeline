@@ -106,27 +106,12 @@ par(mfrow=c(1,1))
 
 # MQM
 # First SLOD
-out.mqm.F<-stepwiseqtlF(fg.cr.obj, pheno.cols = cols, max.qtl=3, usec= "slod", method="hk", penalties=c(max.perm.F[1],0,0))
+out.mqm.F<-stepwiseqtlF(fg.cr.obj, pheno.cols = cols, max.qtl=9, usec= "slod", method="hk", penalties=c(max.perm.F[1],0,0))
 
 if(length(out.mqm.F) > 0) {
 
 chr<-out.mqm.F$chr
 pos<-out.mqm.F$pos
-
-if (length(chr) == 1) {
-  temp<-summary(out.F)
-  temp<-temp[temp$chr != chr,]
-  temp<-temp[order(temp$slod, decreasing=T),]
-  chr<-c(chr, temp[1,'chr'])
-  pos<-c(pos, temp[1,'pos'])
-}
-
-if (length(chr) == 0) {
-  temp<-summary(out.F)
-  temp<-temp[order(temp$slod, decreasing=T),]
-  chr<-temp[1:2, 'chr']
-  pos<-temp[1:2, 'pos']
-}
 
 qtl<-makeqtl(fg.cr.obj, chr, pos, what=c("prob"))
 Qs<-paste('Q', 1:length(pos), sep="")
@@ -159,7 +144,7 @@ m.vect<-c(1, rep(2, length(slodeff)))
 for(i in 1:length(slodeff)) {
   slodeff[[i]] <- summary(fitqtl(fg.cr.obj, phe=i+(min(cols)-1), qtl=qtl,
                                  method="hk", get.ests=TRUE,
-                                 dropone=FALSE))$ests[,1]*m.vect
+                                 dropone=FALSE))$ests[,1]
 }
 
 pname_list<-strsplit(phenames(fg.cr.obj)[cols], '_')
@@ -209,28 +194,13 @@ save.image(file=paste('timeseries_', 'diff', '_cross.object.diff.Rdata', sep="")
   
 # MQM
 # Now MLOD
-out.mqm.F<-stepwiseqtlF(fg.cr.obj, pheno.cols = cols, max.qtl=3, usec= "mlod", method="hk", penalties=c(max.perm.F[2],0,0))
+out.mqm.F<-stepwiseqtlF(fg.cr.obj, pheno.cols = cols, max.qtl=9, usec= "mlod", method="hk", penalties=c(max.perm.F[2],0,0))
 
 
 if(length(out.mqm.F) > 0) {
 
 chr<-out.mqm.F$chr
 pos<-out.mqm.F$pos
-
-if (length(chr) == 1) {
-  temp<-summary(out.F)
-  temp<-temp[temp$chr != chr,]
-  temp<-temp[order(temp$mlod, decreasing=T),]
-  chr<-c(chr, temp[1,'chr'])
-  pos<-c(pos, temp[1,'pos'])
-}
-
-if (length(chr) == 0) {
-  temp<-summary(out.F)
-  temp<-temp[order(temp$mlod, decreasing=T),]
-  chr<-temp[1:2, 'chr']
-  pos<-temp[1:2, 'pos']
-}
 
 qtl<-makeqtl(fg.cr.obj, chr, pos, what=c("prob"))
 Qs<-paste('Q', 1:length(pos), sep="")
@@ -264,7 +234,7 @@ m.vect<-c(1, rep(2, length(mlodeff)))
 for(i in 1:length(mlodeff)) {
   mlodeff[[i]] <- summary(fitqtl(fg.cr.obj, phe=i+(min(cols)-1), qtl=qtl,
                                  method="hk", get.ests=TRUE,
-                                 dropone=FALSE))$ests[,1]*m.vect
+                                 dropone=FALSE))$ests[,1]
 }
 
 pname_list<-strsplit(phenames(fg.cr.obj)[cols], '_')
@@ -343,7 +313,7 @@ m.vect<-c(1, rep(2, length(klodeff)))
 for(i in 1:length(klodeff)) {
   klodeff[[i]] <- summary(fitqtl(fg.cr.obj, phe=i+(min(cols)-1), qtl=qtl,
                                  method="hk", get.ests=TRUE,
-                                 dropone=FALSE))$ests[,1]*m.vect
+                                 dropone=FALSE))$ests[,1]
 }
 
 pname_list<-strsplit(phenames(fg.cr.obj)[cols], '_')

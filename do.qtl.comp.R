@@ -89,7 +89,7 @@ plot(out.s2, main=pname)
 dev.off()
 
 # Do scantwo permutation analysis
-operm.s2<-scantwo(fg.cr.obj, pheno.col=i, method=qtl_method, n.perm=3)
+operm.s2<-scantwo(fg.cr.obj, pheno.col=i, method=qtl_method, n.perm=100)
 assign(paste('operm.s2', pname, sep="."), operm.s2)
 
 # Obtain a permissive set of penalties during initial 'stepwise' QTL model search, we will use these as co-factors in MQM
@@ -274,9 +274,9 @@ if (nrow(qtl.table.so) > 0 ) {
   if (trait_model != 'normal' | trait_model != 'binary') {trait_model<-c("normal")}
   # Perform positive stepwise forward and reverse model selection given formula, fine tuned QTL location, and penalites
   # This is an additive model, run with two different penalties that are specified above
-  stepout.a<-stepwiseqtl(fg.cr.obj, pheno.col=i, qtl=revqtl, formula=my.formula, method=qtl_method, penalties=pen_heavy, max.qtl=3, scan.pairs=T, additive.only=T, model=trait_model)
+  stepout.a<-stepwiseqtl(fg.cr.obj, pheno.col=i, qtl=revqtl, formula=my.formula, method=qtl_method, penalties=pen_heavy, max.qtl=25, scan.pairs=T, additive.only=T, model=trait_model)
   assign(paste('stepout.a', pname, sep="."), stepout.a)
-  stepout.a.lite<-stepwiseqtl(fg.cr.obj, pheno.col=i, qtl=revqtl, formula=my.formula, method=qtl_method, penalties=pen_lite, max.qtl=3, scan.pairs=T, additive.only=T, model=trait_model)
+  stepout.a.lite<-stepwiseqtl(fg.cr.obj, pheno.col=i, qtl=revqtl, formula=my.formula, method=qtl_method, penalties=pen_lite, max.qtl=25, scan.pairs=T, additive.only=T, model=trait_model)
   assign(paste('stepout.a.lite', pname, sep="."), stepout.a.lite)
   
   
@@ -450,9 +450,9 @@ if (nrow(qtl.table.so) == 0 ) {
 
   # Perform positive stepwise forward and reverse model selection given formula, fine tuned QTL location, and penalites
   # This is an additive model, run with two different penalties that are specified above
-  stepout.a<-stepwiseqtl(fg.cr.obj, pheno.col=i, penalties=pen_heavy, max.qtl=3, scan.pairs=T, additive.only=T, model=trait_model)
+  stepout.a<-stepwiseqtl(fg.cr.obj, pheno.col=i, penalties=pen_heavy, max.qtl=25, scan.pairs=T, additive.only=T, model=trait_model)
   assign(paste('stepout.a', pname, sep="."), stepout.a)
-  stepout.a.lite<-stepwiseqtl(fg.cr.obj, pheno.col=i, penalties=pen_lite, max.qtl=3, scan.pairs=T, additive.only=T, model=trait_model)
+  stepout.a.lite<-stepwiseqtl(fg.cr.obj, pheno.col=i, penalties=pen_lite, max.qtl=25, scan.pairs=T, additive.only=T, model=trait_model)
   assign(paste('stepout.a.lite', pname, sep="."), stepout.a.lite)
   save.image(file=paste(dirtrait, session_image_name, sep="/" ))
   
