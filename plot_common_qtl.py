@@ -176,63 +176,65 @@ if re.match('y', comparison):
         
 if re.match('n', comparison):
     for p in phe_r:
-      print(p)
-    name_of_summary_table = "summary.table.mqm." + p + ".csv" 
-    path_to_summary_table =  trait + "/" + "comparison" + "/" + "mqm.out" + "/" + name_of_summary_table
-    print(name_of_summary_table)
-    if os.path.exists(path_to_summary_table):
-        print "Yes"
-        print path_to_summary_table
-        reader=csv.reader(open(path_to_summary_table,"r"),delimiter=',')
-        x=list(reader)
-        result=np.array(x).astype('str')
-        d = result.shape
-        rownum = d[0]
-        print rownum
-        exp = trait[-4:-2]
-        yr = trait[-2:]
-        t1 = [trait] * rownum
-        t2 = ["none"] * rownum
-        t3 = [exp] * rownum
-        t4 = [yr] * rownum
-        t5 = ["raw"] * rownum
-        t1[0] = "trait"
-        t2[0] = "treatment"
-        t3[0] = "exp"
-        t4[0] = "year"
-        t5[0] = "type"
+        print(p)
+        name_of_summary_table = "summary.table.mqm." + p + ".csv"
+        trait = p
+        path_to_summary_table =  trait + "/" + "mqm.out" + "/" + name_of_summary_table
+        print(name_of_summary_table)
+        print("Before if loop...\n")
+        if os.path.exists(path_to_summary_table):
+            print "Yes"
+            print path_to_summary_table
+            reader=csv.reader(open(path_to_summary_table,"r"),delimiter=',')
+            x=list(reader)
+            result=np.array(x).astype('str')
+            d = result.shape
+            rownum = d[0]
+            print rownum
+            exp = trait[-4:-2]
+            yr = trait[-2:]
+            t1 = [trait] * rownum
+            t2 = ["none"] * rownum
+            t3 = [exp] * rownum
+            t4 = [yr] * rownum
+            t5 = ["raw"] * rownum
+            t1[0] = "trait"
+            t2[0] = "treatment"
+            t3[0] = "exp"
+            t4[0] = "year"
+            t5[0] = "type"
         
-        print(t1)
-        print(type(t1))
-        #print(np.shape(np.asarray(t1)))
+            print(t1)
+            print(type(t1))
+            #print(np.shape(np.asarray(t1)))
         
-        t1 = np.asarray(t1)
-        t1 = np.transpose(t1)
-        print(type(t1))
-        print(np.shape(t1))
-        print(t1)
+            t1 = np.asarray(t1)
+            t1 = np.transpose(t1)
+            print(type(t1))
+            print(np.shape(t1))
+            print(t1)
         
-        #print(result[:,5])
+            #print(result[:,5])
         
-        print(np.shape(result))
-        metadata = np.array((t1, t2, t3, t4, t5))
-        metadata = np.transpose(metadata)
-        print(np.shape(result))
-        print(np.shape(metadata))
-        #metadata = np.delete(metadata, 0,0)
-        #result = np.delete(result, 0,0)
-        result = np.hstack((result, metadata))
-        header = result[0,:]
-        print(header)
-        result = np.delete(result, 0,0)
+            print(np.shape(result))
+            metadata = np.array((t1, t2, t3, t4, t5))
+            metadata = np.transpose(metadata)
+            print(np.shape(result))
+            print(np.shape(metadata))
+            #metadata = np.delete(metadata, 0,0)
+            #result = np.delete(result, 0,0)
+            result = np.hstack((result, metadata))
+            header = result[0,:]
+            print(header)
+            result = np.delete(result, 0,0)
 
         
-        print(np.shape(result))
-        print(type(result))
-        #print(result)
-        final_result = np.vstack((final_result, result))
-        print(np.shape(final_result))
-        #print(final_result)
+            print(np.shape(result))
+            print(type(result))
+            #print(result)
+            final_result = np.vstack((final_result, result))
+            print(np.shape(final_result))
+            #print(final_result)
     else:
         print "No"
    

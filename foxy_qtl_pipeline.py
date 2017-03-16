@@ -189,14 +189,14 @@ if re.match('y', server):
             #phe_r_col_number += 1
             # Need to add parallelization routine here
         # Call analysis of each trait in parallel    
-        processes_comp = [mp.Process(target=parallel_comp, args=(x,)) for x in range(0,int(nphe_r)-1,1)]
+        #processes_comp = [mp.Process(target=parallel_comp, args=(x,)) for x in range(0,int(nphe_r)-1,1)]
         # Begin looping through processes
-        for p in processes_comp:
-            p.start()
-            
-        for p in processes_comp:
-            p.join()
-    
+        #for p in processes_comp:
+            #p.start()
+        p = mp.Pool(processes=20)
+        p.map_async(parallel_comp, range(0,int(nphe_r)-1,1)).get(9999999)
+        #for p in processes_comp:
+            #p.join()
         def parallel_diff(x):    
             phe_d_col_number = x + 2
             #for d in phe_d:
@@ -213,13 +213,16 @@ if re.match('y', server):
             #phe_d_col_number += 1
             subprocess.call(qtlcommand_diff_phenotype, shell=True)
         # Call analysis of each trait in parallel    
-        processes_diff = [mp.Process(target=parallel_diff, args=(x,)) for x in range(0,int(nphe_d)-1,1)]
+        #processes_diff = [mp.Process(target=parallel_diff, args=(x,)) for x in range(0,int(nphe_d)-1,1)]
         # Begin looping through processes
-        for p in processes_diff:
-            p.start()
+        #for p in processes_diff:
+            #p.start()
             
-        for p in processes_diff:
-            p.join()
+        #for p in processes_diff:
+            #p.join()
+        p = mp.Pool(processes=20)
+        p.map_async(parallel_diff, range(0,int(nphe_d)-1,1)).get(9999999)
+        
     else:
         def parallel_raw(x):
             print "Processing individual traits with no comparison..."
@@ -235,13 +238,15 @@ if re.match('y', server):
             print qtlcommand_raw_phenotype
             subprocess.call(qtlcommand_raw_phenotype, shell=True)
         # Call analysis of each trait in parallel    
-        processes = [mp.Process(target=parallel_raw, args=(x,)) for x in range(0,int(nphe_r)-1,1)]
+        #processes = [mp.Process(target=parallel_raw, args=(x,)) for x in range(0,int(nphe_r)-1,1)]
         # Begin looping through processes
-        for p in processes:
-            p.start()
+        #for p in processes:
+            #p.start()
             
-        for p in processes:
-            p.join()
+        #for p in processes:
+            #p.join()
+        p = mp.Pool(processes=20)
+        p.map_async(parallel_raw, range(0,int(nphe_r)-1,1)).get(9999999)
 else:
     print "Not on a server system. Will process each trait one-by-one..."
     if re.match('y', comparison):
@@ -328,13 +333,16 @@ if re.match('y', server):
             subprocess.call(qtlcommand_get_gene_comp, shell=True)
 
         # Call analysis of each trait in parallel    
-        processes_comp = [mp.Process(target=parallel_get_gene_comp, args=(x,)) for x in range(0,int(nphe_r)-1,1)]
+        #processes_comp = [mp.Process(target=parallel_get_gene_comp, args=(x,)) for x in range(0,int(nphe_r)-1,1)]
         # Begin looping through processes
-        for p in processes_comp:
-            p.start()
+        #for p in processes_comp:
+            #p.start()
             
-        for p in processes_comp:
-            p.join()
+        #for p in processes_comp:
+            #p.join()
+        p = mp.Pool(processes=20)
+        p.map_async(parallel_get_gene_comp, range(0,int(nphe_r)-1,1)).get(9999999)
+        
         
         
         def parallel_get_gene_diff(x):
@@ -354,13 +362,16 @@ if re.match('y', server):
             subprocess.call(qtlcommand_get_gene_diff, shell=True)
 
         # Call analysis of each trait in parallel    
-        processes_comp = [mp.Process(target=parallel_get_gene_diff, args=(x,)) for x in range(0,int(nphe_d)-1,1)]
+        #processes_comp = [mp.Process(target=parallel_get_gene_diff, args=(x,)) for x in range(0,int(nphe_d)-1,1)]
         # Begin looping through processes
-        for p in processes_comp:
-            p.start()
+        #for p in processes_comp:
+            #p.start()
             
-        for p in processes_comp:
-            p.join()    
+        #for p in processes_comp:
+            #p.join()
+        p = mp.Pool(processes=20)
+        p.map_async(parallel_get_gene_diff, range(0,int(nphe_r)-1,1)).get(9999999)
+
     else:
         def parallel_get_gene(x):
             # Get trait name
@@ -377,13 +388,15 @@ if re.match('y', server):
             print qtlcommand_get_gene
             subprocess.call(qtlcommand_get_gene, shell=True)
         # Call analysis of each trait in parallel    
-        processes = [mp.Process(target=parallel_get_gene, args=(x,)) for x in range(0,int(nphe_r)-1,1)]
+        #processes = [mp.Process(target=parallel_get_gene, args=(x,)) for x in range(0,int(nphe_r)-1,1)]
         # Begin looping through processes
-        for p in processes:
-            p.start()
+        #for p in processes:
+            #p.start()
             
-        for p in processes:
-            p.join()
+        #for p in processes:
+            #p.join()
+        p = mp.Pool(processes=20)
+        p.map_async(parallel_get_gene, range(0,int(nphe_r)-1,1)).get(9999999)
 else:
     
     if re.match('y', comparison):

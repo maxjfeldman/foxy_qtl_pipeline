@@ -87,6 +87,10 @@ for(ch in 1:length(chrs)) {
 # Combine the marker names, chromosome and positional info into a data.frame
 unique_qtl_t2<-as.data.frame(cbind(m.names, chr, pos))
 
+setwd(dir.job.t1)
+save.image("intermediate_fail_point_start.Rdata")
+
+
 # Lets load in the cross object for raw phenotypes 
 raw_cr.obj_path<-paste(dir.job, 'cross.object.raw.Rdata', sep="/")
 load(raw_cr.obj_path)
@@ -109,9 +113,10 @@ pname_list<-strsplit(phenames(fg.cr.obj)[get(paste(t1, 'cols', sep="."))], '_')
 
 days<-c()
 for(p in 1:length(pname_list)) {
-  days<-c(days,pname_list[[p]][2])
+    days<-c(days,pname_list[[p]][length(pname_list[[1]])-1])
 }
 
+save.image(file=paste(dir.job.t1, '/timeseries_', t1, '_cross.object.raw.Rdata', sep=""))
 
 out<- scanone(fg.cr.obj, pheno.col = get(paste(t1, 'cols', sep=".")), method="hk")
 eff <- geteffects(fg.cr.obj, pheno.cols=get(paste(t1, 'cols', sep=".")))
@@ -140,6 +145,9 @@ par(mfrow=c(1,1))
 # MQM
 # First SLOD
 out.mqm.F<-stepwiseqtlF(fg.cr.obj, pheno.cols = get(paste(t1, 'cols', sep=".")), max.qtl=9, usec= "slod", method="hk", penalties=c(max.perm.F[1],0,0))
+save.image(file=paste('timeseries_', t1, '_cross.object.raw.Rdata', sep=""))
+
+if(length(out.mqm.F) > 0) {
 
 if(out.mqm.F$n.qtl > 1 ) {
 
@@ -431,8 +439,11 @@ if(out.mqm.F$n.qtl == 1){
   
 }
 
+}
 
-if(out.mqm.F$n.qtl < 1) {
+if(length(out.mqm.F) < 1) {
+
+#if(out.mqm.F$n.qtl < 1) {
   write("No QTL detected using stepwiseqtl funqtl fxn.", file=paste(dir.job.t1, '/mqm_timeseries_qtl_', job, '.diff', '_mlod.txt' ,sep=""))
 }
 
@@ -441,6 +452,9 @@ save.image(file=paste('timeseries_', t1, '_cross.object.raw.Rdata', sep=""))
 # MQM
 # Now MLOD
 out.mqm.F<-stepwiseqtlF(fg.cr.obj, pheno.cols = get(paste(t1, 'cols', sep=".")), max.qtl=9, usec= "mlod", method="hk", penalties=c(max.perm.F[2],0,0))
+save.image(file=paste('timeseries_', t1, '_cross.object.raw.Rdata', sep=""))
+
+if(length(out.mqm.F) > 0) {
 
 if(out.mqm.F$n.qtl > 1) {
  
@@ -731,7 +745,11 @@ if(out.mqm.F$n.qtl == 1){
   
 }
 
-if(out.mqm.F$n.qtl < 1) {
+}
+
+if(length(out.mqm.F) < 1) {
+
+#if(out.mqm.F$n.qtl < 1) {
   write("No QTL detected using stepwiseqtl funqtl fxn.", file=paste(dir.job.t1, '/mqm_timeseries_qtl_', job, '.diff', '_mlod.txt' ,sep=""))
 }
 save.image(file=paste('timeseries_', t1, '_cross.object.raw.Rdata', sep=""))
@@ -901,9 +919,9 @@ pname_list<-strsplit(phenames(fg.cr.obj)[get(paste(t2, 'cols', sep="."))], '_')
 
 days<-c()
 for(p in 1:length(pname_list)) {
-  days<-c(days,pname_list[[p]][2])
+    days<-c(days,pname_list[[p]][length(pname_list[[1]])-1])
 }
-
+days<-as.numeric(as.character(days))
 out<- scanone(fg.cr.obj, pheno.col = get(paste(t2, 'cols', sep=".")), method="hk")
 eff <- geteffects(fg.cr.obj, pheno.cols=get(paste(t2, 'cols', sep=".")))
 pdf(paste('so_timeseries_qtl_', job, ".", t2, '.pdf', sep=""))
@@ -929,6 +947,9 @@ par(mfrow=c(1,1))
 # MQM
 # First SLOD
 out.mqm.F<-stepwiseqtlF(fg.cr.obj, pheno.cols = get(paste(t2, 'cols', sep=".")), max.qtl=9, usec= "slod", method="hk", penalties=c(max.perm.F[1],0,0))
+save.image(file=paste('timeseries_', t2, '_cross.object.raw.Rdata', sep=""))
+
+if(length(out.mqm.F) > 0 ){
 
 if(out.mqm.F$n.qtl > 1) {
 chr<-out.mqm.F$chr
@@ -1212,7 +1233,10 @@ if(out.mqm.F$n.qtl == 1){
   
 }
 
-if(out.mqm.F$n.qtl < 1) {
+}
+
+if(length(out.mqm.F) < 1){
+    #if(out.mqm.F$n.qtl < 1) {
   write("No QTL detected using stepwiseqtl funqtl fxn.", file=paste(dir.job.t2, '/mqm_timeseries_qtl_', job, '.diff', '_mlod.txt' ,sep=""))
 }
 
@@ -1223,6 +1247,8 @@ save.image(file=paste('timeseries_', t2, '_cross.object.raw.Rdata', sep=""))
 # Now MLOD
 out.mqm.F<-stepwiseqtlF(fg.cr.obj, pheno.cols = get(paste(t2, 'cols', sep=".")), max.qtl=9, usec= "mlod", method="hk", penalties=c(max.perm.F[2],0,0))
 save.image("checkpoint1.Rdata")
+
+if(length(out.mqm.F) > 0) {
 
 if(out.mqm.F$n.qtl > 1) {
 
@@ -1515,8 +1541,11 @@ if(out.mqm.F$n.qtl == 1){
   
 }
 
+}
 
-if(out.mqm.F$n.qtl < 1) {
+if(length(out.mqm.F) < 1) {
+
+#if(out.mqm.F$n.qtl < 1) {
   write("No QTL detected using stepwiseqtl funqtl fxn.", file=paste(dir.job.t2, '/mqm_timeseries_qtl_', job, '.diff', '_mlod.txt' ,sep=""))
 }
 

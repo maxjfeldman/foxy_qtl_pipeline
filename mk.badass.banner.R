@@ -112,11 +112,11 @@ if (nrow(st.diff) > 0) {
   print(p + geom_errorbarh(data = st.diff, aes(y=prop.var, xmax = R.CI_pos, xmin = L.CI_pos, height=5, x=pos)) + ylab("% Variance")  + xlab("Genome Position"))
   dev.off()
   }
-}
+
 if (nrow(st.diff) == 0) {
   write("No QTL detected in the difference.", file=paste(job, 'badass_banner.txt', sep="_"))
 } 
-
+}
 if (comp == 'n') {
 
   # Color plotting character by experiment

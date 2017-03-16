@@ -79,15 +79,15 @@ dev.off()
 save.image(file=paste(dirpname,  session_image_name, sep="/" ))
 
 # Do scantwo to look for QTL interactions/epistasis
-out.s2<-scantwo(fg.cr.obj, pheno.col=i, method=qtl_method)
-assign(paste('out.s2', pname, sep="."), out.s2)
-pdf(file=paste(dirscanone,"/scantwo.qtls.",pname, ".pdf", sep=""))
-plot(out.s2, main=pname)
-dev.off()
+#out.s2<-scantwo(fg.cr.obj, pheno.col=i, method=qtl_method)
+#assign(paste('out.s2', pname, sep="."), out.s2)
+#pdf(file=paste(dirscanone,"/scantwo.qtls.",pname, ".pdf", sep=""))
+#plot(out.s2, main=pname)
+#dev.off()
 
 # Do scantwo permutation analysis
-operm.s2<-scantwo(fg.cr.obj, pheno.col=i, method=qtl_method, n.perm=100)
-assign(paste('operm.s2', pname, sep="."), operm.s2)
+#operm.s2<-scantwo(fg.cr.obj, pheno.col=i, method=qtl_method, n.perm=100)
+#assign(paste('operm.s2', pname, sep="."), operm.s2)
 
 # Obtain a permissive set of penalties during initial 'stepwise' QTL model search, we will use these as co-factors in MQM
 # pen_lite are the permissive penalties
@@ -104,9 +104,9 @@ assign(paste('pen_lite', pname, sep="."), pen_lite)
 assign(paste('pen_heavy', pname, sep="."), pen_heavy)
 
 # Get list of loci which interact significantly
-sig.s2.hk<-summary(out.s2, perms=operm.s2, pvalues=T, alphas=c(0.05, 0.05, 0, 0.05, 0.05))
-assign(paste('sig.s2.hk', pname, sep="."), sig.s2.hk)
-write.csv(sig.s2.hk, file=paste(dirscanone,"/sig_interaction_qtl.", pname, ".csv", sep=""), quote=F)
+#sig.s2.hk<-summary(out.s2, perms=operm.s2, pvalues=T, alphas=c(0.05, 0.05, 0, 0.05, 0.05))
+#assign(paste('sig.s2.hk', pname, sep="."), sig.s2.hk)
+#write.csv(sig.s2.hk, file=paste(dirscanone,"/sig_interaction_qtl.", pname, ".csv", sep=""), quote=F)
 
 best_markers<-summary(out.so)
 best_markers<-best_markers[order(best_markers[,3], decreasing=T),]
