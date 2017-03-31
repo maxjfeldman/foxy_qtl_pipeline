@@ -43,6 +43,7 @@ if re.match('y', comparison):
     print str(phe_d) + "\n"
 
 final_result = np.empty((0,20), str)
+epistasis_result = np.empty((0,22), str)
 
 if re.match('y', comparison):
   for p in phe_r:
@@ -103,7 +104,62 @@ if re.match('y', comparison):
         final_result = np.vstack((final_result, result))
         print(np.shape(final_result))
         #print(final_result)
-
+    (treat, trait) = re.split('\.', str(p))
+    name_of_epistasis_table = "sig_interaction_qtl." + treat + "." + trait + ".csv" 
+    path_to_epistasis_table =  trait + "/" + treat + "/" + "scanone.out" + "/" + name_of_epistasis_table
+    if os.path.exists(path_to_epistasis_table):
+        print "Yes"
+        print path_to_epistasis_table
+        reader=csv.reader(open(path_to_epistasis_table,"r"),delimiter=',')
+        x=list(reader)
+        result=np.array(x).astype('str')
+        d = result.shape
+        rownum = d[0]
+        print rownum
+        exp = trait[-4:-2]
+        yr = trait[-2:]
+        t1 = [trait] * rownum
+        t2 = [treat] * rownum
+        t3 = [exp] * rownum
+        t4 = [yr] * rownum
+        t5 = ["raw"] * rownum
+        t1[0] = "trait"
+        t2[0] = "treatment"
+        t3[0] = "exp"
+        t4[0] = "year"
+        t5[0] = "type"
+        
+        print(t1)
+        print(type(t1))
+        #print(np.shape(np.asarray(t1)))
+        
+        t1 = np.asarray(t1)
+        t1 = np.transpose(t1)
+        print(type(t1))
+        print(np.shape(t1))
+        print(t1)
+        
+        #print(result[:,5])
+        
+        print(np.shape(result))
+        metadata = np.array((t1, t2, t3, t4, t5))
+        metadata = np.transpose(metadata)
+        print(np.shape(result))
+        print(np.shape(metadata))
+        #metadata = np.delete(metadata, 0,0)
+        #result = np.delete(result, 0,0)
+        result = np.hstack((result, metadata))
+        header = result[0,:]
+        print(header)
+        result = np.delete(result, 0,0)
+        if (np.shape(result)[0] < 1):
+            continue
+        print(np.shape(result))
+        print(type(result))
+        #print(result)
+        epistasis_result = np.vstack((epistasis_result, result))
+        print(np.shape(epistasis_result))
+        #print(epistasis_result)
     else:
         print "No"
   for p in phe_d:
@@ -163,14 +219,81 @@ if re.match('y', comparison):
         header = result[0,:]
         print(header)
         result = np.delete(result, 0,0)
-
-        
+        if (np.shape(result)[0] < 1):
+            continue
         print(np.shape(result))
         #print(type(result))
         #print(result)
         final_result = np.vstack((final_result, result))
         print(np.shape(final_result))
         #print(final_result)
+    else:
+        print "No"
+    print(p)
+    (trait, type, treat1, treat2) = re.split('\.', str(p))
+    name_of_summary_table = "summary.table.mqm." + p + ".csv" 
+    path_to_summary_table =  directory + "/" + base_dir + "/" + trait + "/comparison/mqm.out/" + name_of_summary_table
+    
+    # Get comparison traits
+    pwd = os.getcwd()
+    print(pwd)
+    print(name_of_epistasis_table)
+    print(path_to_epistasis_table)
+    if os.path.exists(path_to_epistasis_table):
+        print "Yes"
+        print path_to_epistasis_table
+        reader=csv.reader(open(path_to_epistasis_table,"r"),delimiter=',')
+        x=list(reader)
+        result=np.array(x).astype('str')
+        d = result.shape
+        rownum = d[0]
+        print rownum
+        exp = trait[-4:-2]
+        yr = trait[-2:]
+        t1 = [trait] * rownum
+        t2 = ["diff"] * rownum
+        t3 = [exp] * rownum
+        t4 = [yr] * rownum
+        comp_type = str('comp') + '_' + type
+        t5 = [comp_type] * rownum
+        t1[0] = "trait"
+        t2[0] = "treatment"
+        t3[0] = "exp"
+        t4[0] = "year"
+        t5[0] = "type"
+        
+        print(t1)
+        #print(type(t1))
+        #print(np.shape(np.asarray(t1)))
+        
+        t1 = np.asarray(t1)
+        t1 = np.transpose(t1)
+        #print(type(t1))
+        print(np.shape(t1))
+        print(t1)
+        
+        #print(result[:,5])
+        
+        print(np.shape(result))
+        metadata = np.array((t1, t2, t3, t4, t5))
+        metadata = np.transpose(metadata)
+        print(np.shape(result))
+        print(np.shape(metadata))
+        #metadata = np.delete(metadata, 0,0)
+        #result = np.delete(result, 0,0)
+        result = np.hstack((result, metadata))
+        header = result[0,:]
+        print(header)
+        result = np.delete(result, 0,0)
+
+        if (np.shape(result)[0] < 1):
+            continue
+        print(np.shape(result))
+        #print(type(result))
+        #print(result)
+        epistasis_result = np.vstack((epistasis_result, result))
+        print(np.shape(epistasis_result))
+        #print(epistasis_result)
     else:
         print "No"
         
@@ -237,9 +360,76 @@ if re.match('n', comparison):
             #print(final_result)
     else:
         print "No"
+if re.match('n', comparison):
+    for p in phe_r:
+        print(p)
+        name_of_epistasis_table = "sig_interaction_qtl." + p + ".csv"
+        trait = p
+        path_to_epistasis_table =  trait + "/" + "scanone.out" + "/" + name_of_epistasis_table
+        print(name_of_epistasis_table)
+        print("Before if loop...\n")
+        if os.path.exists(path_to_epistasis_table):
+            print "Yes"
+            print path_to_epistasis_table
+            reader=csv.reader(open(path_to_epistasis_table,"r"),delimiter=',')
+            x=list(reader)
+            result=np.array(x).astype('str')
+            d = result.shape
+            rownum = d[0]
+            print rownum
+            exp = trait[-4:-2]
+            yr = trait[-2:]
+            t1 = [trait] * rownum
+            t2 = ["none"] * rownum
+            t3 = [exp] * rownum
+            t4 = [yr] * rownum
+            t5 = ["raw"] * rownum
+            t1[0] = "trait"
+            t2[0] = "treatment"
+            t3[0] = "exp"
+            t4[0] = "year"
+            t5[0] = "type"
+        
+            print(t1)
+            print(type(t1))
+            #print(np.shape(np.asarray(t1)))
+        
+            t1 = np.asarray(t1)
+            t1 = np.transpose(t1)
+            print(type(t1))
+            print(np.shape(t1))
+            print(t1)
+        
+            #print(result[:,5])
+        
+            print(np.shape(result))
+            metadata = np.array((t1, t2, t3, t4, t5))
+            metadata = np.transpose(metadata)
+            print(np.shape(result))
+            print(np.shape(metadata))
+            #metadata = np.delete(metadata, 0,0)
+            #result = np.delete(result, 0,0)
+            result = np.hstack((result, metadata))
+            header = result[0,:]
+            print(header)
+            result = np.delete(result, 0,0)
+
+            if (np.shape(result)[0] < 1):
+                continue
+            print(np.shape(result))
+            print(type(result))
+            #print(result)
+            epistasis_result = np.vstack((epistasis_result, result))
+            print(np.shape(epistasis_result))
+            #print(epistasis_result)
+    else:
+        print "No"
    
 concatenated_summary_table= base_dir + "_" + "concatenated_summary_table.csv"
 np.savetxt(concatenated_summary_table, final_result, delimiter=",", fmt="%s")
+
+concatenated_epistasis_table= base_dir + "_" + "concatenated_epistasis_table.csv"
+np.savetxt(concatenated_epistasis_table, epistasis_result, delimiter=",", fmt="%s")
 
 os.chdir(directory)
 badass_banner_command = "Rscript mk.badass.banner.R " + base_dir + " " + comparison
