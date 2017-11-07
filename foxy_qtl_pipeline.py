@@ -265,7 +265,7 @@ else:
         phe_d_col_number = 2
         for d in phe_d:
             #    print d
-            (trait, type, treat1, treat2) = re.split('\.', str(phe_d[x]))
+            (trait, type, treat1, treat2) = re.split('\.', str(d))
             print "Trait is: " + trait
             treat_diff = treat1 + "." + treat2
             print "Treatment comparison is: " + treat_diff
